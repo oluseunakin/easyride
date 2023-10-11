@@ -8,31 +8,62 @@ generator client {
 }
 
 model User {
-  id    String @id @default(cuid())
-  email String @unique
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  password Password?
-  notes    Note[]
+  myRequests Vendor[] @relation("requests")
+  name       String
+  id         String    @id
+  offering   Vendor[]
 }
 
-model Password {
-  hash String
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String @unique
+model Service {
+  name    String   @id
+  vendors Vendor[]
 }
 
-model Note {
-  id    String @id @default(cuid())
-  title String
-  body  String
+model Vendor {
+  id             Int      @id @default(autoincrement())
+  name           String
+  about          String   @default("")
+  service        Service  @relation(fields: [serviceName], references: [name])
+  serviceName    String
+  posts          Post[]
+  offerer        User     @relation(fields: [offererId], references: [id])
+  offererId      String
+  subscribers    User[]   @relation("requests")
+  advert         Boolean  @default(false)
+  lat            Float
+  long           Float
+  cover          Media[]
+  contact        Contact?
+  contactId      Int?
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Contact {
+  id      Int      @id @default(autoincrement())
+  phone   String?
+  address String
+  email   String?
+  website String?
+  open    String?
+  close   String?
+  vendor  Vendor @relation(references: [id], fields: [vendorId])
+  vendorId Int @unique
+}
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String
+model Post {
+  vendor      Vendor   @relation(fields: [vendorId], references: [id])
+  vendorId    Int
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  description String
+  media       Media[]
+}
+
+model Media {
+  id       Int     @id @default(autoincrement())
+  ct       String
+  url      String
+  vendor   Vendor? @relation(fields: [vendorId], references: [id])
+  vendorId Int?
+  post     Post?   @relation(fields: [postId], references: [id])
+  postId   Int?
 }

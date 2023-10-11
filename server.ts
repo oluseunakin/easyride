@@ -18,9 +18,8 @@ app.use(
 
 app.use((req, res, next) => {
   // helpful headers:
-  res.set("x-fly-region", process.env.FLY_REGION ?? "unknown");
   res.set("Strict-Transport-Security", `max-age=${60 * 60 * 24 * 365 * 100}`);
-
+  req.headers["ip"] = req.socket.remoteAddress;
   // /clean-urls/ -> /clean-urls
   if (req.path.endsWith("/") && req.path.length > 1) {
     const query = req.url.slice(req.path.length);
