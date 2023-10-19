@@ -65,8 +65,8 @@ export default function Index() {
   }, [coord]);
 
   return (
-    <Form method="POST" className="mx-auto mb-6 w-11/12 bg-cyan-900 p-4 md:w-4/5">
-      <h1 className="mb-6 pt-4 text-center font-sans text-5xl text-white subpixel-antialiased">
+    <Form method="POST" className="mx-auto mb-6 w-11/12 bg-slate-700 p-4 md:w-4/5">
+      <h1 className="mb-6 pt-4 text-center font-sans text-5xl text-white tracking-widest uppercase">
         Become a Provider
       </h1>
       <div className="mb-7">
@@ -189,7 +189,7 @@ export default function Index() {
           ref={provideRef}
           value="Provide"
           type="submit"
-          className="cursor-pointer rounded-md border bg-red-700 p-2 uppercase tracking-widest text-white"
+          className="cursor-pointer rounded-md border text-2xl bg-amber-600 p-2 uppercase tracking-wider border-transparent"
         />
       </div>
       <input type="hidden" name="cover" value={JSON.stringify(cover)} />

@@ -7,17 +7,18 @@ export default function Requested() {
   const requested = user?.myRequests;
   if (requested && requested.length > 0) {
     return (
-      <div className="mb-4 flex flex-col items-center gap-5">
-        {requested.map((request, i) => (
-          <div className="w-3/5 bg-slate-900" key={i}>
-            <Link
-              to={`${base}/welcome/vendor/${request.id}`}
-              className="flex flex-col justify-center text-white"
-            >
-              <p className="text-center text-2xl my-2">{request.service.name}</p>
-              <p className="text-center text-4xl mb-6">{request.name}</p>
-            </Link>
-          </div>
+      <div className="flex flex-col items-center gap-5 mb-4">
+        {requested.map((service, i) => (
+          <Link
+            to={`/welcome/vendor/${service.id}`}
+            key={i}
+            className="mx-auto w-4/5 rounded-sm bg-slate-700 p-10 text-white md:w-3/5"
+          >
+            <h1 className="text-center font-serif text-2xl sm:text-3xl md:text-4xl uppercase">
+              {service.name}
+            </h1>
+            <h2 className="text-center text-2xl font-mono">{service.service.name}</h2>
+          </Link>
         ))}
       </div>
     );

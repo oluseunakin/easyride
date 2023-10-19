@@ -47,11 +47,10 @@ export const VendorHeadComponent = (props: {
     <div>
       <MediaComponent sources={refinedCover} />
       <Link to={`/welcome/vendor/${data.id}`}>
-        <h1 className="mb-2 mt-5 text-center font-serif text-4xl md:text-5xl">
+        <h1 className="mb-2 mt-5 text-center font-serif text-4xl md:text-5xl capitalize">
           {data.name}
         </h1>
       </Link>
-
       {offerer ? null : subscribed ? (
         <Form
           className="mx-auto mb-2 w-fit"

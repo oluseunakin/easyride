@@ -83,15 +83,15 @@ export default function Index() {
           <div className="mb-4 grid auto-cols-fr grid-cols-4">
             <Link
               to="/"
-              className="col-span-3 flex gap-2 text-lg sm:justify-center"
+              className="col-span-3 flex gap-2 text-lg sm:justify-center items-center"
             >
-              <span className="material-symbols-outlined align-middle">
+              <span className="material-symbols-outlined">
                 home
               </span>
               <span>Welcome</span>{" "}
-              <b className="text-xl uppercase">{user!.name}</b>
+              <b className="text-2xl uppercase tracking-wider text-yellow-700">{user!.name}</b>
             </Link>
-            <Link to="/logout" className="flex justify-end">
+            <Link to="/logout" className="flex justify-end text-slate-600">
               <span className="material-symbols-outlined">logout</span>
             </Link>
           </div>
@@ -121,19 +121,19 @@ export default function Index() {
             <span className="material-symbols-outlined">search</span>
           </button>
         </Form>
-        <div className="flex justify-center gap-5 sm:justify-around">
+        <div className="flex justify-center gap-5 sm:justify-around text-lg">
           <div>
-            <Link className="text-red-800" to="bevendor">
+            <Link className="text-red-500 uppercase tracking-wide" to="bevendor">
               Become a Provider
             </Link>
           </div>
           <div>
-            <Link to="requested" className="text-red-900">
+            <Link to="requested" className="text-red-500 uppercase tracking-wide">
               Requested Services
             </Link>
           </div>
           <div>
-            <Link to="offering" className="text-red-800">
+            <Link to="offering" className="text-red-500 uppercase tracking-wide">
               Offering
             </Link>
           </div>

@@ -7,7 +7,7 @@ export function Post(props: { post: any }) {
   if (!post) return <p>Nothing to see here</p>;
   return (
     <div>
-      <p className="mb-1">{post.description}</p>
+      <p className="mb-1 first-letter:capitalize">{post.description}</p>
       <div className="mb-3">
         <span className="mr-1">{dateFormatter(d.getMonth())}</span>
         <span>{d.getDate()}</span>

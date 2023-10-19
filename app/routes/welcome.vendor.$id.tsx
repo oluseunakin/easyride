@@ -78,7 +78,7 @@ export default function Vendor() {
         />
         {vendorFromLoader.posts && (
           <div className="ml-3 mt-8">
-            <hr className="my-4" />
+            <hr className="my-4 bg-black h-1 mr-3" />
             <div className="flex flex-col gap-12">
               {vendorFromLoader.posts.map((p, i) => (
                 <Post key={i} post={p} />
