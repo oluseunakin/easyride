@@ -3,6 +3,8 @@ services:
   postgres:
     image: postgres:latest
     restart: always
+    volumes:
+      - providersconnect-volume:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -10,3 +12,6 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres
     ports:
       - "5432:5432"
+
+volumes:
+  providersconnect:
