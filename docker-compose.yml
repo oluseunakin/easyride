@@ -15,7 +15,7 @@ services:
   app:
     image: node:latest
     working_dir: /myapp
-    command: sh -c "apt-get update && apt-get install -y openssl npm install --include=dev npm prune --omit=dev npx prisma generate npm start"
+    command: sh -c "apt-get update && apt-get install -y openssl npm install --include=dev npm prune --omit=dev npx prisma generate"
     volumes:
       - ./:/myapp
 
