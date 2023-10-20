@@ -1,6 +1,5 @@
 import { Link, useOutletContext } from "@remix-run/react";
 import type { context } from "~/types";
-export const base = "http://localhost:3000";
 
 export default function Requested() {
   const { user } = useOutletContext<context>();

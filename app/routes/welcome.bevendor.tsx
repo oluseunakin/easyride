@@ -7,7 +7,6 @@ import { storeMedia } from "~/firebase/firebase";
 import { createVendor } from "~/models/vendor.server";
 import { getSession, getUserId } from "~/session.server";
 import type { Contact, context, Media } from "~/types";
-import { base } from "./welcome.requested";
 
 export const action = async ({ request }: ActionArgs) => {
   const session = await getSession(request);
@@ -38,7 +37,7 @@ export const action = async ({ request }: ActionArgs) => {
       coord,
       cover
     );
-    return redirect(`${base}/welcome/vendor/${newVendorName}`);
+    return redirect(`/welcome/vendor/${newVendorName}`);
   }
   throw new Response("You are not logged in", { status: 401 });
 };
