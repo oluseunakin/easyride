@@ -9,9 +9,15 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
-      - DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres
     ports:
       - "5432:5432"
+
+  app:
+    image: node:latest
+    working_dir: /myapp
+    command: sh -c "apt-get update && apt-get install -y openssl npm install --include=dev npm prune --omit=dev npx prisma generate npm start"
+    volumes:
+      - ./:/myapp
 
 volumes:
   providersconnect:
