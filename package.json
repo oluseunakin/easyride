@@ -16,7 +16,7 @@
     "resetdev": "prisma migrate reset",
     "setupdev": "prisma migrate dev",
     "pformat": "prisma format",
-    "setup": "prisma generate && prisma migrate deploy",
+    "setup": "npx prisma generate && npx prisma migrate deploy",
     "start": "cross-env NODE_ENV=production node ./build/server.js",
     "start:mocks": "cross-env NODE_ENV=production node --require ./mocks --require dotenv/config ./build/server.js",
     "test": "vitest",
