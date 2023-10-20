@@ -37,6 +37,8 @@ RUN npx prisma generate
 ADD . .
 RUN npm run build
 
+RUN npm run docker
+
 # Finally, build the production image with minimal footprint
 FROM base
 
@@ -49,4 +51,4 @@ COPY --from=build /myapp/build /myapp/build
 COPY --from=build /myapp/public /myapp/public
 ADD . .
 
-CMD ["npm", "docker", "start"]
+CMD ["npm", "start"]
