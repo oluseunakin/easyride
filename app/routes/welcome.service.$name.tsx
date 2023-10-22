@@ -1,6 +1,6 @@
 import type { Service } from "@prisma/client";
 import type { LoaderArgs } from "@remix-run/node";
-import { defer, json } from "@remix-run/node";
+import { defer } from "@remix-run/node";
 import {
   Await,
   useLoaderData,
@@ -18,8 +18,9 @@ export const loader = async ({ params, request }: LoaderArgs) => {
   const name = params.name as string;
   const coords = await getLocation(request);
   const service = await findServiceWithVendors(name, coords);
+  console.log(service?.name)
   if (service == null) {
-    return json(null);
+    return null
   }
   return defer(service);
 };
