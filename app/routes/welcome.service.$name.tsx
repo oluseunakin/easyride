@@ -18,7 +18,6 @@ export const loader = async ({ params, request }: LoaderArgs) => {
   const name = params.name as string;
   const coords = await getLocation(request);
   const service = await findServiceWithVendors(name, coords);
-  console.error(service?.name);
   if (service == null) {
     return null;
   }
@@ -30,11 +29,11 @@ export default function Service() {
   const { location, user } = useOutletContext<context>();
   const { minLat, maxLat, minLong, maxLong } = location;
   const service = useLoaderData<ServiceWithVendors | null>();
-  console.log(service)
   const sortedVendors = useMemo(() => {
     if (service == null) return [];
     return usSorted(service!.vendors, minLat, maxLat, minLong, maxLong);
   }, [minLat, maxLat, minLong, maxLong, service]);
+
   if (!service)
     return (
       <h1 className="mt-8 text-center text-3xl">Service not found, Oops!</h1>
