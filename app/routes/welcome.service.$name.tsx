@@ -18,9 +18,9 @@ export const loader = async ({ params, request }: LoaderArgs) => {
   const name = params.name as string;
   const coords = await getLocation(request);
   const service = await findServiceWithVendors(name, coords);
-  console.log(service?.name)
+  console.error(service?.name);
   if (service == null) {
-    return null
+    return null;
   }
   return defer(service);
 };
@@ -30,10 +30,11 @@ export default function Service() {
   const { location, user } = useOutletContext<context>();
   const { minLat, maxLat, minLong, maxLong } = location;
   const service = useLoaderData<ServiceWithVendors | null>();
-  const sortedVendors = useMemo(
-    () => usSorted(service!.vendors, minLat, maxLat, minLong, maxLong),
-    [minLat, maxLat, minLong, maxLong, service]
-  );
+  console.log(service)
+  const sortedVendors = useMemo(() => {
+    if (service == null) return [];
+    return usSorted(service!.vendors, minLat, maxLat, minLong, maxLong);
+  }, [minLat, maxLat, minLong, maxLong, service]);
   if (!service)
     return (
       <h1 className="mt-8 text-center text-3xl">Service not found, Oops!</h1>
@@ -41,8 +42,9 @@ export default function Service() {
 
   return (
     <div className="flex flex-col gap-20">
-      <h1 className="mt-5 flex flex-wrap justify-center gap-2 text-center  text-slate-900 items-baseline">
-        <span className="text-xl">Welcome to</span> <b className="font-serif text-4xl">{name}</b>
+      <h1 className="mt-5 flex flex-wrap items-baseline justify-center gap-2  text-center text-slate-900">
+        <span className="text-xl">Welcome to</span>{" "}
+        <b className="font-serif text-4xl">{name}</b>
       </h1>
       <div>
         <Suspense fallback={<p>Loading</p>}>
