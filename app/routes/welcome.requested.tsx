@@ -1,4 +1,5 @@
 import { Link, useOutletContext } from "@remix-run/react";
+import EditableSelect from "~/components/EditableSelect";
 import type { context } from "~/types";
 
 export default function Requested() {
@@ -6,19 +7,24 @@ export default function Requested() {
   const requested = user?.myRequests;
   if (requested && requested.length > 0) {
     return (
-      <div className="flex flex-col items-center gap-5 mb-4">
-        {requested.map((service, i) => (
-          <Link
-            to={`/welcome/vendor/${service.id}`}
-            key={i}
-            className="mx-auto w-4/5 rounded-sm bg-slate-700 p-10 text-white md:w-3/5"
-          >
-            <h1 className="text-center font-serif text-2xl sm:text-3xl md:text-4xl uppercase">
-              {service.name}
-            </h1>
-            <h2 className="text-center text-2xl font-mono">{service.service.name}</h2>
-          </Link>
-        ))}
+      <div>
+        <EditableSelect list={requested} placeholder="Find your favourite Provider" />
+        <div className="mb-4 flex flex-col items-center gap-5">
+          {requested.map((provider, i) => (
+            <Link
+              to={`/welcome/vendor/${provider.id}`}
+              key={i}
+              className="mx-auto w-4/5 rounded-sm bg-slate-700 p-10 text-white md:w-3/5"
+            >
+              <h1 className="text-center font-serif text-2xl uppercase sm:text-3xl md:text-4xl">
+                {provider.name}
+              </h1>
+              <h2 className="text-center font-mono text-2xl">
+                {provider.service.name}
+              </h2>
+            </Link>
+          ))}
+        </div>
       </div>
     );
   }

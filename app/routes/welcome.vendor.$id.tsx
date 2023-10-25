@@ -71,14 +71,16 @@ export default function Vendor() {
     );
     return (
       <div className="mb-2">
-        <VendorHeadComponent
-          data={vendorFromLoader}
-          subscribed={subscribed}
-          offerer={offerer}
-        />
+        <div className="p-2">
+          <VendorHeadComponent
+            data={vendorFromLoader}
+            subscribed={subscribed}
+            offerer={offerer}
+          />
+        </div>
         {vendorFromLoader.posts && (
           <div className="ml-3 mt-8">
-            <hr className="my-4 bg-black h-1 mr-3" />
+            <hr className="my-4 mr-3 h-1 bg-black" />
             <div className="flex flex-col gap-12">
               {vendorFromLoader.posts.map((p, i) => (
                 <Post key={i} post={p} />

@@ -50,7 +50,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="bg-slate-50">
+      <body className="bg-slate-100">
         <Outlet />
         <ScrollRestoration />
         <Scripts />

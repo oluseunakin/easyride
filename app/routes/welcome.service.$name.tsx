@@ -41,8 +41,7 @@ export default function Service() {
 
   return (
     <div className="flex flex-col gap-20">
-      <h1 className="mt-5 flex flex-wrap items-baseline justify-center gap-2  text-center text-slate-900">
-        <span className="text-xl">Welcome to</span>{" "}
+      <h1 className="mt-5 text-center text-red-900">
         <b className="font-serif text-4xl">{name}</b>
       </h1>
       <div>

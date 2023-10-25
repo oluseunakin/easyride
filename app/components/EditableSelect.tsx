@@ -19,7 +19,7 @@ const EditableSelect = (props: {
       <div>
         <input
           ref={inputRef}
-          className="w-full rounded-md border-2 p-2"
+          className="w-full rounded-md border-2 p-2 border-black"
           placeholder={placeholder}
           value={(() => value ?? serviceName)()}
           name={name}
@@ -54,7 +54,7 @@ const EditableSelect = (props: {
       {list.length > 0 && (
         <ul
           ref={ulRef}
-          className="absolute mt-1 hidden w-full divide-y border bg-slate-800 p-2 text-white shadow-lg"
+          className="mt-1 hidden w-full divide-y border bg-slate-800 p-2 text-white shadow-lg overflow-y-auto h-96"
         >
           {listState.map((value, i) => (
             <li

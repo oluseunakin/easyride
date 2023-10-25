@@ -64,7 +64,7 @@ export default function Index() {
   }, [coord]);
 
   return (
-    <Form method="POST" className="mx-auto mb-6 w-11/12 bg-slate-700 p-4 md:w-4/5">
+    <Form method="POST" className="mx-auto mb-6 w-11/12 bg-slate-800 p-4 md:w-4/5 shadow-lg shadow-gray-700 rounded-lg">
       <h1 className="mb-6 pt-4 text-center font-sans text-5xl text-white tracking-widest uppercase">
         Become a Provider
       </h1>

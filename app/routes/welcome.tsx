@@ -66,10 +66,14 @@ export default function Index() {
         }
       );
     }
-  },[]);
+  }, []);
 
   useEffect(() => {
-    if (location.lat == 0 && sendLocation.state === "idle" && sendLocation.data === null ) {
+    if (
+      location.lat == 0 &&
+      sendLocation.state === "idle" &&
+      sendLocation.data === null
+    ) {
       const fd = new FormData();
       fd.append("location", JSON.stringify(location));
       sendLocation.submit(fd, { action: `/setlocation`, method: "post" });
@@ -78,26 +82,20 @@ export default function Index() {
 
   return (
     <div>
-      <div className="m-2 mb-14">
+      <div className="mb-14">
         {user && (
-          <div className="mb-4 grid auto-cols-fr grid-cols-4">
-            <Link
-              to="/"
-              className="col-span-3 flex gap-2 text-lg sm:justify-center items-center"
-            >
-              <span className="material-symbols-outlined">
-                home
-              </span>
-              <span>Welcome</span>{" "}
-              <b className="text-2xl uppercase tracking-wider text-yellow-700">{user!.name}</b>
+          <div className="mb-4 flex bg-red-900 p-3 text-white">
+            <Link to="/" className="flex flex-grow items-center gap-2 text-lg">
+              <span className="material-symbols-outlined">home</span>
+              <b className="text-2xl uppercase tracking-wider">{user!.name}</b>
             </Link>
-            <Link to="/logout" className="flex justify-end text-slate-600">
+            <Link to="/logout" className="flex justify-end text-slate-100">
               <span className="material-symbols-outlined">logout</span>
             </Link>
           </div>
         )}
         <Form
-          className="relative mb-5 sm:mx-10"
+          className="relative mx-10 mb-5"
           method="get"
           action={`/service/${searchValue}`}
         >
@@ -121,25 +119,19 @@ export default function Index() {
             <span className="material-symbols-outlined">search</span>
           </button>
         </Form>
-        <div className="flex justify-center gap-5 sm:justify-around text-lg">
-          <div>
-            <Link className="text-red-500 uppercase tracking-wide" to="bevendor">
-              Become a Provider
-            </Link>
-          </div>
-          <div>
-            <Link to="requested" className="text-red-500 uppercase tracking-wide">
-              Requested Services
-            </Link>
-          </div>
-          <div>
-            <Link to="offering" className="text-red-500 uppercase tracking-wide">
-              Offering
-            </Link>
-          </div>
+        <div className="flex flex-wrap justify-center gap-5 text-2xl sm:justify-around">
+          <Link to="offering" className="capitalize tracking-wide text-red-700 hover:underline">
+            Doings
+          </Link>
+          <Link className="capitalize tracking-wide text-red-700 hover:underline" to="bevendor">
+            Be A Doer
+          </Link>
+          <Link to="requested" className="capitalize tracking-wide text-red-700 hover:underline">
+            Doings i like
+          </Link>
         </div>
       </div>
-      <Outlet context={{ user, allServices, location }} />
+      <Outlet context={{ user, allServices, location }}/>
     </div>
   );
 }

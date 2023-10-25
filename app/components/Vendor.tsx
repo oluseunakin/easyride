@@ -44,10 +44,12 @@ export const VendorHeadComponent = (props: {
     [contact]
   );
   return (
-    <div>
-      <MediaComponent sources={refinedCover} />
+    <div className="bg-white shadow-lg shadow-slate-800">
+      <div className="p-2">
+        <MediaComponent sources={refinedCover} />
+      </div>
       <Link to={`/welcome/vendor/${data.id}`}>
-        <h1 className="mb-2 mt-5 text-center font-serif text-4xl md:text-5xl capitalize">
+        <h1 className="mb-2 mt-5 text-center text-4xl capitalize text-red-500 md:text-5xl">
           {data.name}
         </h1>
       </Link>
@@ -81,7 +83,9 @@ export const VendorHeadComponent = (props: {
       {contact && (
         <div className="mb-1 flex flex-wrap justify-center gap-2">
           {eAddress.map((c, i) => (
-            <div key={i}>{c[1]}</div>
+            <p key={i} className="text-slate-800">
+              {c[1]}
+            </p>
           ))}
         </div>
       )}
@@ -90,13 +94,13 @@ export const VendorHeadComponent = (props: {
           {restAddress
             .filter((r) => r[0] !== "vendorId")
             .map((c, i) => (
-              <p className="text-center text-gray-700" key={i}>
+              <p className="text-center text-slate-800" key={i}>
                 {c[1]}
               </p>
             ))}
         </div>
       )}
-      <p className="text-center">{data.about}</p>
+      <p className="pb-4 text-center">{data.about}</p>
     </div>
   );
 };
