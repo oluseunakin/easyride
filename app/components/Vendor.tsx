@@ -48,8 +48,8 @@ export const VendorHeadComponent = (props: {
       <div className="p-2">
         <MediaComponent sources={refinedCover} />
       </div>
-      <Link to={`/welcome/vendor/${data.id}`}>
-        <h1 className="mb-2 mt-5 text-center text-4xl capitalize text-red-500 md:text-5xl">
+      <Link to={`/welcome/vendor/${data.id}`} className="block mb-4 mt-5">
+        <h1 className="text-center text-4xl capitalize text-red-500 md:text-5xl">
           {data.name}
         </h1>
       </Link>

@@ -82,7 +82,7 @@ export default function Index() {
 
   return (
     <div>
-      <div className="mb-14">
+      <div className="mb-16">
         {user && (
           <div className="mb-4 flex bg-red-900 p-3 text-white">
             <Link to="/" className="flex flex-grow items-center gap-2 text-lg">
@@ -95,7 +95,7 @@ export default function Index() {
           </div>
         )}
         <Form
-          className="relative mx-10 mb-5"
+          className="relative sm:mx-10 mb-5 mx-2"
           method="get"
           action={`/service/${searchValue}`}
         >

@@ -5,11 +5,22 @@ import type { context } from "~/types";
 export default function Requested() {
   const { user } = useOutletContext<context>();
   const requested = user?.myRequests;
+  const goto = requested?.map((r) => `/welcome/vendor/${r.id}`);
+  const listClicked = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+    window.location.href = e.currentTarget.getAttribute("goto")!;
+  };
   if (requested && requested.length > 0) {
     return (
-      <div>
-        <EditableSelect list={requested} placeholder="Find your favourite Provider" />
-        <div className="mb-4 flex flex-col items-center gap-5">
+      <div className="p-2">
+        <div className="mx-auto max-w-sm">
+          <EditableSelect
+            list={requested.map((r) => r.name)}
+            goto={goto}
+            listClicked={listClicked}
+            placeholder="Find your favourite Provider"
+          />
+        </div>
+        <div className="my-4 flex flex-col items-center gap-5">
           {requested.map((provider, i) => (
             <Link
               to={`/welcome/vendor/${provider.id}`}

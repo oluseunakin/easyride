@@ -8,6 +8,7 @@ import {
   useParams,
 } from "@remix-run/react";
 import { Suspense, useMemo } from "react";
+import EditableSelect from "~/components/EditableSelect";
 import { VendorHeadComponent } from "~/components/Vendor";
 import { usSorted } from "~/helper";
 import { findServiceWithVendors } from "~/models/service.model";
@@ -29,6 +30,13 @@ export default function Service() {
   const { location, user } = useOutletContext<context>();
   const { minLat, maxLat, minLong, maxLong } = location;
   const service = useLoaderData<ServiceWithVendors | null>();
+  const goto = useMemo(
+    () => service?.vendors?.map((r) => `/welcome/vendor/${r.id}`),
+    [service]
+  );
+  const listClicked = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+    window.location.href = e.currentTarget.getAttribute("goto")!;
+  };
   const sortedVendors = useMemo(() => {
     if (service == null) return [];
     return usSorted(service!.vendors, minLat, maxLat, minLong, maxLong);
@@ -40,10 +48,18 @@ export default function Service() {
     );
 
   return (
-    <div className="flex flex-col gap-20">
+    <div className="flex flex-col gap-10">
       <h1 className="mt-5 text-center text-red-900">
         <b className="font-serif text-4xl">{name}</b>
       </h1>
+      <div className="sm:w-9/12 sm:mx-auto mx-2">
+        <EditableSelect
+          list={service.vendors.map((vendor) => vendor.name)}
+          goto={goto}
+          listClicked={listClicked}
+          placeholder="Find your favourite Provider"
+        />
+      </div>
       <div>
         <Suspense fallback={<p>Loading</p>}>
           <Await resolve={service} errorElement={<p>Error getting Service</p>}>

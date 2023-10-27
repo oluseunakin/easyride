@@ -3,6 +3,7 @@ import { json } from "@remix-run/node";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { Form, useLoaderData, useOutletContext } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
+//import { Calender } from "~/components/Calendar";
 import { Post } from "~/components/Post";
 import { VendorHeadComponent } from "~/components/Vendor";
 import { storeMedia } from "~/firebase/firebase";
@@ -71,6 +72,9 @@ export default function Vendor() {
     );
     return (
       <div className="mb-2">
+        {/* <div className="mx-auto w-fit">
+          <Calender/>
+        </div> */}
         <div className="p-2">
           <VendorHeadComponent
             data={vendorFromLoader}
@@ -79,9 +83,9 @@ export default function Vendor() {
           />
         </div>
         {vendorFromLoader.posts && (
-          <div className="ml-3 mt-8">
-            <hr className="my-4 mr-3 h-1 bg-black" />
-            <div className="flex flex-col gap-12">
+          <div className="mt-8">
+            <hr className="my-4 mr-3 bg-black" />
+            <div className="flex flex-col gap-12 m-4">
               {vendorFromLoader.posts.map((p, i) => (
                 <Post key={i} post={p} />
               ))}
@@ -94,10 +98,10 @@ export default function Vendor() {
               <textarea
                 placeholder="Show workings..."
                 name="post"
-                className="flex-grow resize-none rounded-sm border p-4"
+                className="flex-grow resize-none rounded-sm border p-4 shadow-lg"
               ></textarea>
               <label htmlFor="media" className="cursor-pointer">
-                Media
+                <span className="material-symbols-outlined text-red-600">video_library</span>
               </label>
               <input
                 type="file"
@@ -128,7 +132,7 @@ export default function Vendor() {
                 }}
                 className="cursor-pointer"
               >
-                Share
+                <span className="material-symbols-outlined text-red-700">Share</span>
               </button>
             </div>
             {uploading === "loading" && (

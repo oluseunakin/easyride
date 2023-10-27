@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const EditableSelect = (props: {
   list: any[];
@@ -7,12 +7,25 @@ const EditableSelect = (props: {
   textChanged?: Function;
   name?: string;
   value?: string;
+  goto?: string[]
 }) => {
-  const { list, listClicked, placeholder, textChanged, name, value } = props;
+  const { list, listClicked, placeholder, textChanged, name, value, goto } = props;
   const inputRef = useRef<HTMLInputElement>(null);
   const ulRef = useRef<HTMLUListElement>(null);
   const [listState, setListState] = useState(list);
   const [serviceName, setServiceName] = useState("");
+
+  useEffect(() => {
+    const ul = ulRef.current
+    if(goto) {
+      const liChildren = ul!.children
+      let index = 0
+      for(const c of liChildren) {
+        c.setAttribute("goto", goto[index])
+        index++
+      }
+    }
+  }, [goto])
 
   return (
     <div className="w-full">
@@ -54,7 +67,7 @@ const EditableSelect = (props: {
       {list.length > 0 && (
         <ul
           ref={ulRef}
-          className="mt-1 hidden w-full divide-y border bg-slate-800 p-2 text-white shadow-lg overflow-y-auto h-96"
+          className="mt-1 hidden w-full divide-y border bg-slate-800 p-2 text-white shadow-lg overflow-y-auto max-h-80"
         >
           {listState.map((value, i) => (
             <li

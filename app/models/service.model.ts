@@ -20,7 +20,6 @@ export const findServiceWithVendors = async (
   name: string,
   coords?: Location
 ) => {
-  console.log(name)
   if (coords) {
     return prisma.service.findUnique({
       where: { name },
