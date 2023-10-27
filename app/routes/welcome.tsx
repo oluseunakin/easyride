@@ -15,10 +15,28 @@ import { getAllServices } from "~/models/service.model";
 import { getUserId } from "~/session.server";
 import { findUser } from "~/models/user.server";
 import type { Location } from "~/types";
+import { Server } from "socket.io";
+
+import { io } from "socket.io-client";
 
 export const meta: V2_MetaFunction = () => [{ title: "Connecting Businesses" }];
 
+export const socket = io()
+
 export const loader = async ({ request }: LoaderArgs) => {
+  const inboxSocketServer = new Server();
+
+  inboxSocketServer.on("connection", (socket) => {
+    console.log("Client connected to Server");
+
+    socket.on("join", (id: string) => {
+      socket.join(id);
+    });
+
+    socket.on("msg from sender", (msg: string, receiver: string) => {
+      inboxSocketServer.in(receiver).emit("msg to receiver", msg);
+    });
+  });
   const userId = await getUserId(request);
   const allServices = getAllServices();
   const user = await findUser(userId);
@@ -45,6 +63,14 @@ export default function Index() {
     const search = e.currentTarget.innerText;
     window.location.href = `/welcome/service/${search}`;
   };
+
+  socket.connect()
+
+  socket.on("connect", () => {
+    console.log("Socket has been connected")
+
+    socket.emit("join", user?.name)
+  })
 
   useEffect(() => {
     if ("geolocation" in navigator) {

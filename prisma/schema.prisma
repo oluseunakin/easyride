@@ -35,6 +35,14 @@ model Vendor {
   cover          Media[]
   contact        Contact?
   contactId      Int?
+  bookings       Booking[]
+}
+
+model Booking {
+  id            Int @id @default(autoincrement())
+  booker        User @relation(references: [name], fields: [bookerName])
+  bookerName    String
+  due           DateTime
 }
 
 model Contact {
