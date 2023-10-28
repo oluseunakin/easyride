@@ -12,6 +12,7 @@ model User {
   name       String
   id         String    @id
   offering   Vendor[]
+  bookings   Booking[]
 }
 
 model Service {
@@ -40,8 +41,10 @@ model Vendor {
 
 model Booking {
   id            Int @id @default(autoincrement())
-  booker        User @relation(references: [name], fields: [bookerName])
+  booker        User @relation(references: [id], fields: [bookerName])
   bookerName    String
+  vendor        Vendor @relation(references: [id], fields: [vendorId])
+  vendorId      Int
   due           DateTime
 }
 
