@@ -1,11 +1,15 @@
 import { Link, useOutletContext } from "@remix-run/react";
+import { useMemo } from "react";
 import EditableSelect from "~/components/EditableSelect";
 import type { context } from "~/types";
 
 export default function OfferingServices() {
   const { user } = useOutletContext<context>();
   const offeringServices = user!.offering;
-  const goto = offeringServices?.map((o) => `/welcome/vendor/${o.id}`);
+  const goto = useMemo(
+    () => offeringServices?.map((o) => `/welcome/vendor/${o.id}`),
+    [offeringServices]
+  );
   const listClicked = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     window.location.href = e.currentTarget.getAttribute("goto")!;
   };
@@ -25,9 +29,9 @@ export default function OfferingServices() {
             <Link
               to={`/welcome/vendor/${service.id}`}
               key={i}
-              className="mx-auto w-4/5 rounded-sm bg-slate-700 p-10 text-white md:w-3/5"
+              className="mx-auto rounded-lg bg-slate-700 p-10 text-white md:w-3/5"
             >
-              <h1 className="text-center font-serif text-2xl uppercase sm:text-3xl md:text-4xl">
+              <h1 className="mb-2 text-center font-serif uppercase leading-loose tracking-widest text-3xl md:text-4xl">
                 {service.name}
               </h1>
               <h2 className="text-center font-mono text-2xl">
@@ -42,7 +46,7 @@ export default function OfferingServices() {
   return (
     <div className="flex justify-center">
       <Link
-        className="bg-blue-100 p-4 text-2xl text-blue-800"
+        className="p-8 text-blue-800 bg-blue-300 text-5xl"
         to="/welcome/bevendor"
       >
         Provide Service

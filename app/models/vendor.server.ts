@@ -1,4 +1,6 @@
+import { Booking } from "@prisma/client";
 import { prisma } from "~/db.server";
+import { hashParties } from "~/helper";
 import type { Contact, Location, Media } from "~/types";
 
 export const createVendor = async (
@@ -75,11 +77,12 @@ export const getFullVendor = async (id: number) => {
   const vendor = await prisma.vendor.findFirstOrThrow({
     where: { id },
     include: {
-      posts: { take: 10, include: { media: true } },
+      posts: { take: 10, include: { media: true, _count: {select: {comments: true}} }, orderBy: {id: "desc"} },
       cover: true,
       contact: true,
-      subscribers: { select: { name: true } },
+      subscribers: { select: { name: true, id: true } },
       offerer: { select: { name: true } },
+      bookings: { select: { bookerName: true } },
     },
   });
   return vendor;
@@ -98,5 +101,24 @@ export const unsubscribe = async (vendorId: number, userId: string) => {
   await prisma.vendor.update({
     where: { id: vendorId },
     data: { subscribers: { disconnect: { id: userId } } },
+  });
+  const hashedId = hashParties(userId) + vendorId;
+  await prisma.chat.delete({ where: { id: hashedId } });
+};
+
+export const checkBookingEveryday = async (id: number) => {
+  const todaysDate = new Date().getDate();
+  const vendorWithBookings = await prisma.vendor.findUnique({
+    where: { id },
+    select: { bookings: true },
+  });
+  const toDelete: Array<Booking> = [];
+  vendorWithBookings?.bookings.forEach(async (b) => {
+    if (b.dueDate - todaysDate == 0) toDelete.push(b);
+  });
+  //call email or sms method to notify 
+  await prisma.vendor.update({
+    where: { id },
+    data: { bookings: { deleteMany: toDelete } },
   });
 };

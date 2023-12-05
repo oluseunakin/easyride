@@ -25,9 +25,9 @@ export default function Requested() {
             <Link
               to={`/welcome/vendor/${provider.id}`}
               key={i}
-              className="mx-auto w-4/5 rounded-sm bg-slate-700 p-10 text-white md:w-3/5"
+              className="mx-auto rounded-lg bg-slate-700 p-10 text-white md:w-3/5"
             >
-              <h1 className="text-center font-serif text-2xl uppercase sm:text-3xl md:text-4xl">
+              <h1 className="mb-2 text-center font-serif text-3xl uppercase leading-loose tracking-widest md:text-4xl">
                 {provider.name}
               </h1>
               <h2 className="text-center font-mono text-2xl">

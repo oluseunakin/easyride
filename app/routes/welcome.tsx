@@ -1,5 +1,5 @@
-import { defer } from "@remix-run/node";
-import type { LoaderArgs, V2_MetaFunction } from "@remix-run/node";
+import { defer, json } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs, V2_MetaFunction } from "@remix-run/node";
 import { Suspense, useEffect, useState } from "react";
 import {
   Await,
@@ -12,35 +12,33 @@ import {
 import EditableSelect from "~/components/EditableSelect";
 import type { Service } from "@prisma/client";
 import { getAllServices } from "~/models/service.model";
-import { getUserId } from "~/session.server";
+import { getSession, getUserId } from "~/session.server";
 import { findUser } from "~/models/user.server";
 import type { Location } from "~/types";
-import { Server } from "socket.io";
 
 import { io } from "socket.io-client";
 
 export const meta: V2_MetaFunction = () => [{ title: "Connecting Businesses" }];
 
-export const socket = io()
+export const socket = io("ws://localhost:5000");
 
 export const loader = async ({ request }: LoaderArgs) => {
-  const inboxSocketServer = new Server();
-
-  inboxSocketServer.on("connection", (socket) => {
-    console.log("Client connected to Server");
-
-    socket.on("join", (id: string) => {
-      socket.join(id);
-    });
-
-    socket.on("msg from sender", (msg: string, receiver: string) => {
-      inboxSocketServer.in(receiver).emit("msg to receiver", msg);
-    });
-  });
   const userId = await getUserId(request);
   const allServices = getAllServices();
   const user = await findUser(userId);
   return defer({ user, allServices });
+};
+
+export const action = async ({ request }: ActionArgs) => {
+  const fd = await request.json();
+  const coord = fd.location as Location;
+  const session = await getSession(request);
+  session.set("location", coord);
+  return json(null, {
+    headers: {
+      "Set-Cookie": await sessionStorage.commitSession(session),
+    },
+  });
 };
 
 export default function Index() {
@@ -55,22 +53,27 @@ export default function Index() {
   });
   const sendLocation = useFetcher();
   const [searchValue, setSearchValue] = useState("");
-  const searchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value);
-  };
+  const [connected, setConnected] = useState(false);
 
   const listClicked = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     const search = e.currentTarget.innerText;
     window.location.href = `/welcome/service/${search}`;
   };
 
-  socket.connect()
+  useEffect(() => {
+    socket.connect();
+    setConnected(true);
+    socket.on("connect", () => {
+      console.log("Socket has been connected");
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
-  socket.on("connect", () => {
-    console.log("Socket has been connected")
-
-    socket.emit("join", user?.name)
-  })
+  useEffect(() => {
+    connected && socket.emit("join", user?.id);
+  }, [connected, user?.id]);
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -100,9 +103,11 @@ export default function Index() {
       sendLocation.state === "idle" &&
       sendLocation.data === null
     ) {
-      const fd = new FormData();
-      fd.append("location", JSON.stringify(location));
-      sendLocation.submit(fd, { action: `/setlocation`, method: "post" });
+      sendLocation.submit(JSON.stringify({ location }), {
+        action: `/setlocation`,
+        method: "post",
+        encType: "application/json",
+      });
     }
   }, [location, sendLocation]);
 
@@ -121,11 +126,15 @@ export default function Index() {
           </div>
         )}
         <Form
-          className="relative sm:mx-10 mb-5 mx-2"
+          className="relative mx-2 mb-5 sm:mx-10"
           method="get"
           action={`/service/${searchValue}`}
         >
-          <Suspense fallback={<p>Fetching Servicess</p>}>
+          <Suspense
+            fallback={
+              <EditableSelect list={[]} placeholder="Fetching Services" />
+            }
+          >
             <Await
               resolve={allServices}
               errorElement={<p>Nothing was fetched from server</p>}
@@ -135,7 +144,7 @@ export default function Index() {
                   list={allServices.map((service: Service) => service.name)}
                   placeholder="What Service do you need?"
                   listClicked={listClicked}
-                  textChanged={searchChange}
+                  textChanged={setSearchValue}
                   value={searchValue}
                 />
               )}
@@ -145,19 +154,28 @@ export default function Index() {
             <span className="material-symbols-outlined">search</span>
           </button>
         </Form>
-        <div className="flex flex-wrap justify-center gap-5 text-2xl sm:justify-around">
-          <Link to="offering" className="capitalize tracking-wide text-red-700 hover:underline">
+        <div className="flex flex-wrap justify-around text-2xl sm:justify-around">
+          <Link
+            to="offering"
+            className="capitalize tracking-wide text-red-700 "
+          >
             Doings
           </Link>
-          <Link className="capitalize tracking-wide text-red-700 hover:underline" to="bevendor">
+          <Link
+            className="capitalize tracking-wide text-red-700"
+            to="bevendor"
+          >
             Be A Doer
           </Link>
-          <Link to="requested" className="capitalize tracking-wide text-red-700 hover:underline">
+          <Link
+            to="requested"
+            className="capitalize tracking-wide text-red-700"
+          >
             Doings i like
           </Link>
         </div>
       </div>
-      <Outlet context={{ user, allServices, location }}/>
+      <Outlet context={{ user, allServices, location }} />
     </div>
   );
 }

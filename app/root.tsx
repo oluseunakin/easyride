@@ -36,6 +36,7 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: customSheet },
   {
     rel: "stylesheet",
+    as: "image",
     href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200",
   },
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
@@ -50,7 +51,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="bg-slate-100">
+      <body className="bg-slate-200">
         <Outlet />
         <ScrollRestoration />
         <Scripts />

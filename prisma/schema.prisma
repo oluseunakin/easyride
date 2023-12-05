@@ -13,6 +13,7 @@ model User {
   id         String    @id
   offering   Vendor[]
   bookings   Booking[]
+  comments   Comment[]
 }
 
 model Service {
@@ -39,13 +40,22 @@ model Vendor {
   bookings       Booking[]
 }
 
+model Chat {
+  id Int @id 
+  messages Json[]
+}
+
 model Booking {
   id            Int @id @default(autoincrement())
   booker        User @relation(references: [id], fields: [bookerName])
   bookerName    String
+  username      String
   vendor        Vendor @relation(references: [id], fields: [vendorId])
   vendorId      Int
-  due           DateTime
+  purpose       String
+  dueDate       Int
+  dueHour       Int
+  dueMinute     Int
 }
 
 model Contact {
@@ -67,6 +77,20 @@ model Post {
   createdAt   DateTime @default(now())
   description String
   media       Media[]
+  likes       String[]
+  comments    Comment[]
+}
+
+model Comment {
+  commentor   User  @relation(fields: [commentorId], references: [id])
+  commentorId String
+  commentorName String @default("")
+  id    Int @id @default(autoincrement())
+  comment String
+  createdAt DateTime @default(now())
+  media   Media[]
+  post   Post @relation(fields: [postId], references: [id])
+  postId Int
 }
 
 model Media {
@@ -77,4 +101,6 @@ model Media {
   vendorId Int?
   post     Post?   @relation(fields: [postId], references: [id])
   postId   Int?
+  comment Comment? @relation(fields: [commentId], references: [id]) 
+  commentId Int?
 }

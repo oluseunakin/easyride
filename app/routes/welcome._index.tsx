@@ -2,6 +2,7 @@ import type { LoaderArgs } from "@remix-run/node";
 import { defer } from "@remix-run/node";
 import { Await, useLoaderData, useOutletContext } from "@remix-run/react";
 import { Suspense, useMemo } from "react";
+import { Spinner } from "~/components/Spinner";
 import { VendorHeadComponent } from "~/components/Vendor";
 import { usSorted } from "~/helper";
 import { getAdvertisedVendors } from "~/models/vendor.server";
@@ -36,19 +37,25 @@ export default function Index() {
             </div>
           ))}
       </div>
-      <Suspense fallback={<p>Fetching Vendors</p>}>
+      <Suspense
+        fallback={
+          <div className="flex justify-center">
+            <Spinner width="w-20" height="h-20" />
+          </div>
+        }
+      >
         <Await
           resolve={sortedAdvertised}
           errorElement={<p>Nothing was fetched from server</p>}
         >
           {(advertised) =>
             advertised.map((a, i: number) => {
-              /* const subscribed = Boolean(
+              const subscribed = Boolean(
                 user!.myRequests.find((req) => req.name === a.serviceName)
-              ); */
+              );
               return (
                 <div key={i} className="mx-auto mb-6 w-4/5 md:w-3/5">
-                  <VendorHeadComponent data={a} />
+                  <VendorHeadComponent data={a} subscribed={subscribed} />
                 </div>
               );
             })

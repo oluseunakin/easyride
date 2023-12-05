@@ -19,7 +19,7 @@ export const createPost = async (post: {
   description: string;
   vendorId: number;
 }) => {
-  await prisma.post.create({
+  return await prisma.post.create({
     data: {
       vendor: { connect: { id: post.vendorId } },
       description: post.description,

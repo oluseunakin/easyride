@@ -45,3 +45,9 @@ export const dateFormatter = (month: number) => {
   else if(month == 10) return "Nov"
   else return "Dec"
 }
+
+export const hashParties = (userId: string) => {
+  let hashed = 0
+  for(let p of userId) hashed += p.charCodeAt(0)
+  return hashed
+}

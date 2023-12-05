@@ -9,6 +9,7 @@ import {
 } from "@remix-run/react";
 import { Suspense, useMemo } from "react";
 import EditableSelect from "~/components/EditableSelect";
+import { Spinner } from "~/components/Spinner";
 import { VendorHeadComponent } from "~/components/Vendor";
 import { usSorted } from "~/helper";
 import { findServiceWithVendors } from "~/models/service.model";
@@ -61,7 +62,7 @@ export default function Service() {
         />
       </div>
       <div>
-        <Suspense fallback={<p>Loading</p>}>
+        <Suspense fallback={<Spinner width="w-20" height="h-20" />}>
           <Await resolve={service} errorElement={<p>Error getting Service</p>}>
             {(service) =>
               sortedVendors.map((vendor, i) => {

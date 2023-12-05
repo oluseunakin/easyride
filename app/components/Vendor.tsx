@@ -1,8 +1,8 @@
 import { Form, Link } from "@remix-run/react";
 import { useMemo } from "react";
-import type { FullVendor } from "~/types";
+//import type { FullVendor } from "~/types";
 import { MediaComponent } from "./Media";
-import { Post } from "./Post";
+//import { PostComponent } from "./Post";
 import type { Media } from "@prisma/client";
 
 export const VendorHeadComponent = (props: {
@@ -44,12 +44,12 @@ export const VendorHeadComponent = (props: {
     [contact]
   );
   return (
-    <div className="bg-white shadow-lg shadow-slate-800">
+    <div className="bg-white shadow-lg shadow-slate-800 rounded-md">
       <div className="p-2">
         <MediaComponent sources={refinedCover} />
       </div>
       <Link to={`/welcome/vendor/${data.id}`} className="block mb-4 mt-5">
-        <h1 className="text-center text-4xl capitalize text-red-500 md:text-5xl">
+        <h1 className="text-center text-4xl capitalize text-blue-900 md:text-5xl">
           {data.name}
         </h1>
       </Link>
@@ -83,7 +83,7 @@ export const VendorHeadComponent = (props: {
       {contact && (
         <div className="mb-1 flex flex-wrap justify-center gap-2">
           {eAddress.map((c, i) => (
-            <p key={i} className="text-slate-800">
+            <p key={i} className="tracking-widest font-serif text-blue-500">
               {c[1]}
             </p>
           ))}
@@ -94,18 +94,18 @@ export const VendorHeadComponent = (props: {
           {restAddress
             .filter((r) => r[0] !== "vendorId")
             .map((c, i) => (
-              <p className="text-center text-slate-800" key={i}>
+              <p className="text-center text-sm text-blue-400" key={i}>
                 {c[1]}
               </p>
             ))}
         </div>
       )}
-      <p className="pb-4 text-center">{data.about}</p>
+      <p className="pb-4 pl-4 pr-2 text-center lg:w-1/2 lg:mx-auto">{data.about}</p>
     </div>
   );
 };
 
-export const Vendor = (props: {
+/* export const Vendor = (props: {
   data: FullVendor;
   subscribed: boolean;
   offerer: boolean;
@@ -121,10 +121,10 @@ export const Vendor = (props: {
       {data.posts.length > 0 && (
         <div>
           {data.posts.map((post, i) => (
-            <Post key={i} post={null} />
+            <PostComponent key={i} post={null} />
           ))}
         </div>
       )}
     </div>
   );
-};
+}; */

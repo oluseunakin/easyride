@@ -6,6 +6,7 @@ export const findUser = async (id: string) => {
     where: { id },
     select: {
       name: true,
+      id: true,
       offering: { select: { name: true, serviceName: true, id: true } },
       myRequests: {select: {
         name: true,

@@ -1,8 +1,9 @@
 import type { ActionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { Await, Form, useOutletContext } from "@remix-run/react";
+import { Await, Form, useNavigation, useOutletContext } from "@remix-run/react";
 import { Suspense, useEffect, useRef, useState } from "react";
 import EditableSelect from "~/components/EditableSelect";
+import { Spinner } from "~/components/Spinner";
 import { storeMedia } from "~/firebase/firebase";
 import { createVendor } from "~/models/vendor.server";
 import { getSession, getUserId } from "~/session.server";
@@ -50,6 +51,8 @@ export default function Index() {
   const [cover, setCover] = useState<Array<Media>>();
   const [uploading, setUploading] = useState("");
   const [coord, setCoord] = useState<number[]>();
+  const navigation = useNavigation();
+
   useEffect(() => {
     if (cover && cover.length > 0) {
       setUploading(`Upload successful`);
@@ -63,14 +66,19 @@ export default function Index() {
       setCoord((coord) => coord!.map((c) => Number(c)));
   }, [coord]);
 
-  return (
-    <Form method="POST" className="mx-auto mb-6 w-11/12 bg-slate-900 p-4 md:w-4/5 shadow-2xl shadow-slate-400 rounded-lg">
-      <h1 className="mb-6 pt-4 text-center font-sans text-5xl text-white tracking-widest uppercase">
-        Become a Provider
+  return navigation.state === "submitting" ? (
+    <Spinner width="w-20" height="h-20" />
+  ) : (
+    <Form
+      method="POST"
+      className="mx-auto mb-6 w-11/12 rounded-lg bg-slate-800 p-4 shadow-2xl shadow-slate-400 md:w-4/5"
+    >
+      <h1 className="mb-6 pt-4 text-center font-sans text-5xl uppercase tracking-widest text-white">
+        Show Yourself
       </h1>
       <div className="mb-7">
         <input
-          placeholder="Your Vendor Name"
+          placeholder="Name - Choose a name that reflects what you are offering"
           ref={nameRef}
           name="name"
           required
@@ -79,18 +87,24 @@ export default function Index() {
       </div>
       <textarea
         name="about"
-        className="mb-7 w-full rounded-sm border-2 p-2 resize-none"
+        className="mb-7 w-full resize-none rounded-md border-2 p-2"
         placeholder="Describe what you do and offer, feel free to be proud"
       ></textarea>
       <div className="relative mb-7">
-        <Suspense fallback={<p>Fetching Services</p>}>
+        <Suspense
+          fallback={
+            <p>
+              <EditableSelect list={[]} placeholder="Fetching Services" />
+            </p>
+          }
+        >
           <Await
             resolve={allServices}
             errorElement={<p>Nothing was fetched from server</p>}
           >
             {(allServices) => (
               <EditableSelect
-                placeholder="Enter or pick the type of Service you offer"
+                placeholder="What type of Service do you offer"
                 name="serviceName"
                 list={allServices.map((service) => service.name)}
               />
@@ -98,8 +112,7 @@ export default function Index() {
           </Await>
         </Suspense>
       </div>
-      <hr />
-      <div className="mb-7 mt-4">
+      <div className="mb-7 mt-4 w-4/5 mx-auto text-center">
         <label
           htmlFor="cover"
           className="cursor-pointer text-center text-xl text-amber-500"
@@ -113,6 +126,7 @@ export default function Index() {
           multiple
           onChange={async (e) => {
             const media = e.target.files;
+            setError(false);
             provideRef.current!.disabled = true;
             if (media && media.length > 2 && provideRef.current) {
               setError(true);
@@ -124,16 +138,18 @@ export default function Index() {
         />
         {error && (
           <p className="mt-2 flex justify-center text-center text-red-500">
-            An Error occured
+            A maximum of 2 is allowed
           </p>
         )}
         {uploading === "loading" && (
           <div className="mt-2 flex justify-center">
-            <div className="mr-3 h-5 w-5 animate-spin rounded-full border border-t-gray-700"></div>
+            <div className="mr-3 ">
+              <Spinner width="w-7" height="h-7" />
+            </div>
           </div>
         )}
         {uploading === "Upload successful" && (
-          <div className="mt-2 flex justify-center text-center text-red-300">
+          <div className="mt-2 flex justify-center text-center text-red-500">
             {uploading}
           </div>
         )}
@@ -188,7 +204,7 @@ export default function Index() {
           ref={provideRef}
           value="Provide"
           type="submit"
-          className="cursor-pointer rounded-md border text-2xl bg-amber-600 p-2 uppercase tracking-wider border-transparent"
+          className="cursor-pointer rounded-md border border-transparent bg-amber-600 p-2 text-2xl uppercase tracking-wider"
         />
       </div>
       <input type="hidden" name="cover" value={JSON.stringify(cover)} />

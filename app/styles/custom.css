@@ -1,5 +1,5 @@
-.material-symbols-outlined {
-  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 48;
+.small-star, .booked, .liked {
+  font-variation-settings: "FILL" 400, "wght" 100, "GRAD" 0, "opsz" 48;
 }
 form ul {
   position: absolute;
