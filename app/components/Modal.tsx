@@ -7,7 +7,7 @@ export const Modal = (props: {
   const { setModalState, modalState } = props;
   return (
     <div className="fixed bottom-2 left-3 right-3 top-2 z-40 rounded-xl bg-slate-700 shadow-2xl shadow-slate-900 sm:left-10 sm:right-10 md:left-20 md:right-20">
-      <div className="m-3 mb-1 flex">
+      <div className="flex p-3">
         <button
           className=""
           onClick={() => {

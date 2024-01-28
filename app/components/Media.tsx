@@ -1,51 +1,44 @@
-import { useEffect, useRef, useState } from "react";
-import type { Media } from "~/types";
+import { useEffect, useState } from "react";
+
+export type Media = {
+  url: string;
+  ct: string;
+};
 
 export const MediaComponent = (props: { sources: Media[] }) => {
   const { sources } = props;
-  const [media, setMedia] = useState<Media[]>(sources);
-  const dRef = useRef<HTMLDivElement>(null);
-  const divRef = useRef<HTMLDivElement>(null);
+  const [media, setMedia] = useState(sources);
 
   useEffect(() => {
-    const documentWidth = window.innerWidth;
-    const isBigDevice = documentWidth >= 768;
-    if (media.length == 1) {
-      divRef.current?.classList.remove("flex");  
-    }
-    if (isBigDevice) {
-      divRef.current?.classList.add("justify-center")
-      return;
-    }
-    const newMedia: Media[] = [];
-    let j = 0;
-    let delay = 7000;
-    media.forEach((m, i) => {
-      if (m.ct.includes("video")) {
-        const videoElement = dRef.current!.firstElementChild!
-          .firstElementChild as HTMLMediaElement;
-        delay = videoElement.duration;
-      }
-      if (i == media.length - 1) j = 0;
-      else j++;
-      newMedia[j] = m;
-    });
-    setTimeout(() => {
-      setMedia(newMedia);
-    }, delay);
-  });
+    const timeout = setTimeout(() => {
+      let nm: Media[] = [];
+      media.forEach((pm, i, arr) => {
+        if (i === 0 && pm.ct === "video") {
+          // If the first element is a video, keep it at index 0
+          nm[i] = pm;
+        } else {
+          // Move all other elements to the left
+          nm[i - 1 < 0 ? arr.length - 1 : i - 1] = pm;
+        }
+      });
+      setMedia(nm);
+    }, 7000);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [media]);
 
   return (
-    <div className="flex gap-4 overflow-hidden md:overflow-auto" ref={divRef}>
+    <>
       {media.map((m, i) => (
-        <div key={i} className="min-w-full md:min-w-0 flex justify-center" ref={dRef}>
+        <div key={i}>
           {m.ct.startsWith("image") ? (
-            <img src={m.url} alt="App" />
+            <img src={m.url} alt="App " />
           ) : (
             <video src={m.url} controls></video>
           )}
         </div>
       ))}
-    </div>
+    </>
   );
 };

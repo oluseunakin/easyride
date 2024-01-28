@@ -11,9 +11,10 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const today = new Date();
   const due = new Date();
   due.setDate(today.getDate() + count);
+  due.setHours(1, 0, 0, 0)
   return await prisma.vendor.findUnique({
     where: { id },
-    select: { bookings: { take: 20, where: { dueDate: due.getDate() } } },
+    select: { bookings: { take: 20, where: { dueDate: due } } },
   });
 };
 
@@ -27,27 +28,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     });
     return null;
   }
-  const data = await request.json();
-  await prisma.vendor.update({
-    where: { id },
-    data: {
-      bookings: {
-        create: {
-          dueDate: data.dueDate,
-          dueHour: data.dueHour,
-          dueMinute: data.dueMinute,
-          purpose: data.purpose,
-          booker: {
-            connect: {
-              id: data.bookerId,
-            },
-          },
-          username: data.bookerName,
-        },
-      },
-    },
-  });
-  return null;
+  const data = await request.formData();
+  return await prisma.booking.create({data: {
+    purpose: data.get("purpose") as string,
+    dueDate: new Date(data.get("dueDate") as string),
+    vendorId: id,
+    bookerName: data.get("booker") as string
+  }});
 };
 
 export default function Booking() {
@@ -63,7 +50,7 @@ export default function Booking() {
   ) : (
     <h1 className="text-center">
       You have not yet been booked for this day,{" "}
-      <Link to="promote">Promote what you do here</Link>
+      <Link to="/boost">Promote what you do here</Link>
     </h1>
   );
 }

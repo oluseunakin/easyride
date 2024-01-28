@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { dateFormatter } from "~/helper";
-import { socket } from "~/routes/welcome";
+import { socket } from "~/root";
 import type { Message } from "~/types";
 
 export const Inbox = (props: {
@@ -92,7 +92,7 @@ export const Inbox = (props: {
 
   return (
     <div className="h-9/10">
-      <p className="m-3 bg-slate-700 text-center text-4xl text-lime-300">
+      <p className="m-3 bg-slate-700 text-center text-3xl text-lime-300">
         {title}
       </p>
       <div className="div mb-4 h-4/5 overflow-auto rounded bg-green-100">

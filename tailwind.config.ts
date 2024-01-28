@@ -5,7 +5,7 @@ export default {
   theme: {
     extend: {
       height: {
-        '9/10': '89%',
+        '9/10': '85%',
         '8.5/10': '85%',
       }
     },

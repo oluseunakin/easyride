@@ -13,31 +13,41 @@ model User {
   id         String    @id
   offering   Vendor[]
   bookings   Booking[]
-  comments   Comment[]
+  postLiked  Post[]
+  commentLiked Comment[]
+  comments   Comment[] @relation("comments")
 }
 
 model Service {
-  name    String   @id
+  id Int @id @default(autoincrement())
+  name    String  @unique
+  synonyms Synonym[]
   vendors Vendor[]
+}
+
+model Synonym {
+  id Int @id @default(autoincrement())
+  name String @unique
+  service Service @relation(references: [id], fields: [serviceId])
+  serviceId Int
 }
 
 model Vendor {
   id             Int      @id @default(autoincrement())
   name           String
   about          String   @default("")
-  service        Service  @relation(fields: [serviceName], references: [name])
+  service        Service  @relation(fields: [serviceName], references: [name], onDelete: Cascade)
   serviceName    String
   posts          Post[]
   offerer        User     @relation(fields: [offererId], references: [id])
   offererId      String
   subscribers    User[]   @relation("requests")
   advert         Boolean  @default(false)
-  lat            Float
-  long           Float
-  cover          Media[]
-  contact        Contact?
-  contactId      Int?
+  lat            Float  
+  cover          Json[]
+  contact        Json
   bookings       Booking[]
+  comments       Comment[]
 }
 
 model Chat {
@@ -49,58 +59,32 @@ model Booking {
   id            Int @id @default(autoincrement())
   booker        User @relation(references: [id], fields: [bookerName])
   bookerName    String
-  username      String
-  vendor        Vendor @relation(references: [id], fields: [vendorId])
+  vendor        Vendor @relation(references: [id], fields: [vendorId], onDelete: Cascade)
   vendorId      Int
   purpose       String
-  dueDate       Int
-  dueHour       Int
-  dueMinute     Int
-}
-
-model Contact {
-  id      Int      @id @default(autoincrement())
-  phone   String?
-  address String
-  email   String?
-  website String?
-  open    String?
-  close   String?
-  vendor  Vendor @relation(references: [id], fields: [vendorId])
-  vendorId Int @unique
+  dueDate       DateTime @default(now())
 }
 
 model Post {
-  vendor      Vendor   @relation(fields: [vendorId], references: [id])
-  vendorId    Int
-  id          Int      @id @default(autoincrement())
+  id          Int @id @default(autoincrement())
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorId    Int 
   createdAt   DateTime @default(now())
-  description String
-  media       Media[]
-  likes       String[]
+  content String
+  media       Json[]
+  likes       User[]
   comments    Comment[]
 }
 
 model Comment {
-  commentor   User  @relation(fields: [commentorId], references: [id])
-  commentorId String
-  commentorName String @default("")
-  id    Int @id @default(autoincrement())
-  comment String
-  createdAt DateTime @default(now())
-  media   Media[]
-  post   Post @relation(fields: [postId], references: [id])
-  postId Int
-}
-
-model Media {
-  id       Int     @id @default(autoincrement())
-  ct       String
-  url      String
-  vendor   Vendor? @relation(fields: [vendorId], references: [id])
-  vendorId Int?
-  post     Post?   @relation(fields: [postId], references: [id])
-  postId   Int?
-  comment Comment? @relation(fields: [commentId], references: [id]) 
-  commentId Int?
+  id        Int     @id @default(autoincrement())
+  content   String
+  postId    Int
+  post      Post    @relation(fields: [postId], references: [id])
+  userId    String?
+  user      User?   @relation(fields: [userId], references: [id], "comments")
+  vendorId  Int?
+  vendor    Vendor? @relation(fields: [vendorId], references: [id])
+  likes     User[]
+  createdAt   DateTime @default(now())
 }

@@ -16,7 +16,7 @@ export const action = async ({ request }: ActionArgs) => {
   if (!userInDatabase) await createUser({ id: user.id!, name: user.name! });
   return await createUserSession({
     request,
-    redirectTo: "/welcome",
+    redirectTo: "/",
     remember,
     userId: user.id!,
   });
@@ -35,19 +35,19 @@ export default function Index() {
       const fd = new FormData();
       fd.append("remember", String(remember));
       fd.append("user", JSON.stringify(user));
-      submit(fd, { method: "post", action: "/login" });
+      submit(fd, { method: "post"});
     }
   }, [user, remember, submit]);
 
   return (
-    <div className="flex h-screen w-full flex-col justify-center gap-16">
+    <div className="flex h-screen w-11/12 mx-auto flex-col justify-center gap-16">
       <h1 className="text-4xl capitalize text-center">
         Login to enjoy a personalized service
       </h1>
       <div className=" bg-slate-800 p-6 text-white mx-auto w-5/6 md:w-3/4 lg:w-3/5">
         <div className="m-8 flex justify-center mt-4">
           <button
-            className="rounded-full border border-transparent bg-orange-600 p-4"
+            className="rounded-full border border-transparent bg-green-600 p-8"
             onClick={async () => {
               const access = await login("google");
               if (access) setUser(access);
@@ -58,7 +58,7 @@ export default function Index() {
         </div>
         <div className="flex justify-center m-8">
           <button
-            className="rounded-full border border-transparent bg-orange-800 p-4"
+            className="rounded-full border border-transparent bg-orange-600 p-8"
             onClick={async () => {
               const access = await login("facebook");
               if (access) setUser(access);

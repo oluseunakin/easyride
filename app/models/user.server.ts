@@ -3,23 +3,19 @@ import { prisma } from "~/db.server";
 
 export const findUser = async (id: string) => {
   return await prisma.user.findUnique({
-    where: { id },
-    select: {
-      name: true,
-      id: true,
-      offering: { select: { name: true, serviceName: true, id: true } },
-      myRequests: {select: {
-        name: true,
-        about: true,
-        service: true,
-        offerer: {select: {name: true}},
-        lat: true,
-        long: true,
-        contact: true,
-        id: true,
-        cover: true
-      }},
-    },
+    where: { id }
+  });
+};
+
+export const findUserWithRequests = async (id: string) => {
+  return await prisma.user.findUnique({
+    where: { id }, include: {myRequests: {select: {id: true, name: true, serviceName: true}}}
+  });
+};
+
+export const findUserWithOfferings = async (id: string) => {
+  return await prisma.user.findUnique({
+    where: { id }, include: {offering: {select: {id: true, name: true, serviceName: true}}}
   });
 };
 

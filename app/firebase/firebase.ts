@@ -1,11 +1,14 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { initializeApp } from "firebase/app";
 //import { getAnalytics } from "firebase/analytics";
 import type { User } from "firebase/auth";
 import {
   GoogleAuthProvider,
   getAuth,
-  signInWithPopup,
+  signInWithRedirect,
   FacebookAuthProvider,
+  getRedirectResult,
+  signInWithPopup,
 } from "firebase/auth";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import type { Media } from "~/types";
@@ -31,14 +34,11 @@ export const login = async (endpoint: string) => {
     provider = new FacebookAuthProvider();
   }
   try {
-    const result = await signInWithPopup(auth, provider);
-    let credential = GoogleAuthProvider.credentialFromResult(result);
-    if (endpoint === "facebook") {
-      credential = FacebookAuthProvider.credentialFromResult(result);
-    }
-    if (credential) {
-      //const token = credential?.accessToken;
-      const user: User = result.user;
+    const result = await signInWithPopup(auth, provider)
+    //await signInWithRedirect(auth, provider);
+    //const result = await getRedirectResult(auth);
+    if (result) {
+      const user = result.user;
       return { name: user.displayName, id: user.uid };
     }
     return null;
@@ -55,7 +55,7 @@ export const storeMedia = async (path: string, files: FileList) => {
     const storageRef = ref(storage, `${path}/${f.name}`);
     const uploaded = await uploadBytes(storageRef, f);
     const url = await getDownloadURL(uploaded.ref);
-    const ct = (uploaded.metadata.contentType)!;
+    const ct = uploaded.metadata.contentType!;
     uploadLinks.push({ url, ct });
   }
   return uploadLinks;

@@ -7,7 +7,7 @@ export const loader = async ({ params }: LoaderArgs) => {
   let hashedId = hashParties(uid!);
   if (pid) hashedId += Number(pid);
   const chat = await prisma.chat.findUnique({ where: { id: hashedId } });
-  if(!chat) return {id: -1, messages: []}
+  if(chat == null) return {id: -1, messages: []}
   return chat
 };
 

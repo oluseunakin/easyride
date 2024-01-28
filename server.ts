@@ -5,9 +5,9 @@ import { createRequestHandler } from "@remix-run/express";
 import compression from "compression";
 import express from "express";
 import morgan from "morgan";
-import cron from "node-cron";
+/* import cron from "node-cron";
 import { prisma } from "~/db.server";
-import { checkBookingEveryday } from "~/models/vendor.server";
+import { checkBookingEveryday } from "~/models/vendor.server"; */
 
 const app = express();
 
@@ -100,7 +100,7 @@ const port = process.env.PORT || 3000;
 app.listen(port, async () => {
   // require the built app so we're ready when the first request comes in
   require(BUILD_DIR);
-  cron.schedule("1 1 * * *", async () => {
+  /* cron.schedule("1 1 * * *", async () => {
     try {
       const allVendors = await prisma.vendor.findMany({ select: { id: true } });
       for (const vendor of allVendors) {
@@ -109,7 +109,7 @@ app.listen(port, async () => {
     } catch (e) {
       console.log("Error in cron job");
     }
-  });
+  }); */
   console.log(`✅ app ready: http://localhost:${port}`);
 });
 
