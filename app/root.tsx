@@ -39,7 +39,7 @@ import { prisma } from "./db.server";
 
 export const meta: V2_MetaFunction = () => [{ title: "Connecting Businesses" }];
 
-export const socket = io("ws://localhost:5000");
+export const socket = io("ws://providersconnectchatserver.onrender.com");
 
 export function ErrorBoundary() {
   const error = useRouteError();
