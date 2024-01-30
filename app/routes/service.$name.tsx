@@ -13,8 +13,11 @@ import type { BasicVendor } from "~/types";
 export const loader = async ({ params, request }: LoaderArgs) => {
   const name = params.name as string;
   const coords = await getLocation(request);
-  let vendors = findServiceWithVendors(name);
-  if (coords) vendors = findServiceWithVendors(name, coords);
+  const count = 0
+  const take = 20
+  let vendors = findServiceWithVendors(name, count, take);
+  const radius = 20
+  if (coords) vendors = findServiceWithVendors(name, count, take, coords, radius);
   return defer({ vendors, userid: await getUserId(request) });
 };
 

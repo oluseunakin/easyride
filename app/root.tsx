@@ -247,11 +247,7 @@ export default function App() {
                           />
                         ))}
                       </div>
-                    ) : (
-                      <div className="mx-2 flex items-center justify-center bg-slate-900 px-4 py-32 text-center text-3xl text-white shadow-2xl shadow-slate-300">
-                        Nothing to see here
-                      </div>
-                    )
+                    ) : null
                   }
                 </Await>
               </Suspense>

@@ -43,7 +43,7 @@ export default function Requested() {
                     key={i}
                     className="mx-auto rounded-lg bg-slate-700 p-10 text-white sm:w-3/5"
                   >
-                    <h1 className="mb-2 text-center font-serif text-3xl uppercase leading-loose tracking-widest md:text-4xl shadow-lg shadow-slate-100">
+                    <h1 className="mb-2 text-center font-serif text-3xl uppercase leading-loose tracking-widest md:text-4xl">
                       {provider.name}
                     </h1>
                     <h2 className="text-center font-mono text-2xl">

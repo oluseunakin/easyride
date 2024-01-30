@@ -40,14 +40,14 @@ export default function Index() {
   }, [user, remember, submit]);
 
   return (
-    <div className="flex h-screen w-11/12 mx-auto flex-col justify-center gap-16">
+    <div className="flex h-screen w-11/12 mx-auto flex-col gap-16 mt-6">
       <h1 className="text-4xl capitalize text-center">
         Login to enjoy a personalized service
       </h1>
-      <div className=" bg-slate-800 p-6 text-white mx-auto w-5/6 md:w-3/4 lg:w-3/5">
+      <div className=" bg-slate-800 p-6 text-white mx-auto w-5/6 md:w-3/5">
         <div className="m-8 flex justify-center mt-4">
           <button
-            className="rounded-full border border-transparent bg-green-600 p-8"
+            className="rounded-full border border-transparent bg-green-600 p-8 text-2xl text-green-50"
             onClick={async () => {
               const access = await login("google");
               if (access) setUser(access);
@@ -56,7 +56,7 @@ export default function Index() {
             Login with Google
           </button>
         </div>
-        <div className="flex justify-center m-8">
+        {/* <div className="flex justify-center m-8">
           <button
             className="rounded-full border border-transparent bg-orange-600 p-8"
             onClick={async () => {
@@ -66,7 +66,7 @@ export default function Index() {
           >
             Login with Facebook
           </button>
-        </div>
+        </div> */}
         <div className="flex justify-center mb-4">
           <label>
             <input

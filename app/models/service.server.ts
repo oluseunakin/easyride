@@ -20,9 +20,12 @@ export const findService = async (id: number) => {
 
 export const findServiceWithVendors = async (
   name: string,
+  count: number,
+  take: number,
   userLocation?: Location,
   radius?: number
 ) => {
+  const offset = count * take;
   if (userLocation) {
     const { lat, long } = userLocation;
     return await prisma.$queryRaw<Vendor[]>`WITH VendorDistances AS ( 
@@ -61,13 +64,16 @@ export const findServiceWithVendors = async (
     distance
   FROM
     VendorDistances
-  WHERE
-    distance <= ${radius}`;
+ /*  WHERE
+    distance <= ${radius} */
+    ORDER BY vd.id ASC
+  OFFSET ${offset} ROWS
+  FETCH NEXT ${take} ROWS ONLY`;
   }
   return (
     await prisma.service.findUnique({
       where: { name },
-      include: { vendors: true },
+      include: { vendors: {take: take, skip: offset, orderBy: {id: "asc"}} },
     })
   )?.vendors;
 };

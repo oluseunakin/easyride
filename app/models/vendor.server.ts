@@ -102,8 +102,8 @@ export const getVendorsNearby = async (
     "_requests" sr ON sr."B" = vd.id
   LEFT JOIN 
     "User" subscribers ON subscribers."id" = sr."A"
-  WHERE 
-     vd.distance <= ${radius} 
+  /* WHERE 
+     vd.distance <= ${radius}  */
   ORDER BY vd.id ASC
   OFFSET ${offset} ROWS
   FETCH NEXT ${take} ROWS ONLY
