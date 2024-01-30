@@ -1,13 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { initializeApp } from "firebase/app";
-//import { getAnalytics } from "firebase/analytics";
-import type { User } from "firebase/auth";
 import {
   GoogleAuthProvider,
   getAuth,
-  signInWithRedirect,
   FacebookAuthProvider,
-  getRedirectResult,
   signInWithPopup,
 } from "firebase/auth";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
