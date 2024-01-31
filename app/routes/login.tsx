@@ -45,11 +45,11 @@ export default function Index() {
   }, [user, remember, submit]);
 
   return (
-    <div className="mx-auto mt-8 flex w-11/12 flex-col justify-center md:w-3/4">
+    <div className="mx-auto flex w-11/12 flex-col justify-center md:w-3/4 mt-2 md:mt-6">
       <h1 className="mb-8 text-center text-4xl capitalize">
         Login to enjoy a personalized service
       </h1>
-      <div className=" mx-auto w-5/6 bg-slate-800 p-6 text-white md:w-3/5">
+      <div className=" bg-slate-800 p-6">
         <div className="m-4 flex justify-center py-4 border-b">
           <button
             className="rounded-2xl border border-transparent bg-green-600 px-8 py-4 text-2xl text-green-50"
@@ -62,7 +62,7 @@ export default function Index() {
           </button>
         </div>
         <div className="my-4">
-          <p className="my-4 text-center">
+          <p className="my-4 text-center text-slate-100">
             {signUp ? "Sign up" : "Sign in"} using your e-mail and password
           </p>
           <div className="flex flex-col gap-4">
@@ -88,7 +88,7 @@ export default function Index() {
                 });
               }}
             />
-            <div className="flex justify-around w-2/3 mx-auto">
+            <div className="flex justify-around">
               <button
                 className="rounded-lg bg-yellow-600 px-5 py-2 text-yellow-50"
                 onClick={async () => {
@@ -103,7 +103,7 @@ export default function Index() {
               >
                 {signUp ? "Sign up" : "Sign in"}
               </button>
-              <button
+              <button className="text-amber-400"
                 onClick={() => {
                   setSignUp(!signUp);
                 }}
