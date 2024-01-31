@@ -1,8 +1,9 @@
 import { initializeApp } from "firebase/app";
 import {
   GoogleAuthProvider,
+  createUserWithEmailAndPassword,
   getAuth,
-  FacebookAuthProvider,
+  signInWithEmailAndPassword,
   signInWithPopup,
 } from "firebase/auth";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
@@ -20,23 +21,48 @@ const firebaseConfig = {
 
 //getAnalytics(app);
 
-export const login = async (endpoint: string) => {
+export const login = async (
+  endpoint: string,
+  email?: string,
+  password?: string
+) => {
   initializeApp(firebaseConfig);
   const auth = getAuth();
   auth.useDeviceLanguage();
-  let provider = new GoogleAuthProvider();
-  if (endpoint === "facebook") {
-    provider = new FacebookAuthProvider();
-  }
   try {
-    const result = await signInWithPopup(auth, provider)
-    //await signInWithRedirect(auth, provider);
-    //const result = await getRedirectResult(auth);
-    if (result) {
-      const user = result.user;
-      return { name: user.displayName, id: user.uid };
+    if (endpoint === "facebook") {
+      //const provider = new FacebookAuthProvider();
+    } else if (endpoint === "google") {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        const user = result.user;
+        return { name: user.displayName, id: user.uid };
+      }
+      return null;
+    } else if (endpoint === "create") {
+      if (email && password) {
+        const credential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        const user = credential.user;
+        return { name: user.displayName, id: user.uid };
+      }
+      return null;
+    } else {
+      if (email && password) {
+        const credential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        const user = credential.user;
+        return { name: user.displayName, id: user.uid };
+      }
+      return null;
     }
-    return null;
   } catch (e) {
     return null;
   }

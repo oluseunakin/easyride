@@ -35,7 +35,7 @@ export const VendorComponent = (props: {
     [vendor]
   );
   return (
-    <div className="rounded-md bg-slate-900 shadow-lg shadow-slate-400 w-11/12 mx-auto lg:h-3/5 my-5">
+    <div className="rounded-md bg-slate-800 shadow-lg shadow-slate-400 w-11/12 mx-auto lg:h-3/5 my-5">
       {vendor?.cover && <div className="p-2 flex justify-center">
         <MediaComponent sources={vendor!.cover as Media[]} />
       </div>}

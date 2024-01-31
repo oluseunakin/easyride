@@ -39,7 +39,7 @@ import { prisma } from "./db.server";
 
 export const meta: V2_MetaFunction = () => [{ title: "Connecting Businesses" }];
 
-export const socket = io("ws://providersconnectchatserver.onrender.com");
+export const socket = io("https://providersconnectchatserver.onrender.com");
 
 export function ErrorBoundary() {
   const error = useRouteError();
@@ -147,79 +147,83 @@ export default function App() {
       </head>
       <body className="bg-slate-100">
         {path !== "/login" && (
-          <header className="pb-8 mb-4 sticky top-0 z-40 bg-slate-100">
-            {user && (
-              <div className="mb-4 flex items-center bg-red-900 p-3 text-white">
-                <Link
-                  to="/"
-                  className="flex flex-grow items-center gap-2 text-lg"
-                >
-                  <span className="material-symbols-outlined">home</span>
-                  <b className="text-2xl uppercase tracking-wider">
-                    {user!.name}
-                  </b>
-                </Link>
-                <div>
+          <>
+            <header className="">
+              {user && (
+                <div className="mb-4 flex items-center bg-red-900 p-3 text-white">
                   <Link
-                    to="/logout"
-                    className="flex justify-end text-slate-100"
+                    to="/"
+                    className="flex flex-grow items-center gap-2 text-lg"
                   >
-                    <span className="material-symbols-outlined">logout</span>
+                    <span className="material-symbols-outlined">home</span>
+                    <b className="text-2xl uppercase tracking-wider">
+                      {user!.name}
+                    </b>
                   </Link>
+                  <div>
+                    <Link
+                      to="/logout"
+                      className="flex justify-end text-slate-100"
+                    >
+                      <span className="material-symbols-outlined">logout</span>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            )}
-            <Form
-              className="relative mx-auto mb-5 w-11/12 max-w-md"
-              action={`/service/${searchValue}`}
-            >
-              <Suspense fallback={<Spinner width="w-10" height="h-10" />}>
-                <Await
-                  resolve={allServices}
-                  errorElement={<p>Nothing was fetched from server</p>}
+              )}
+            </header>
+            <div className="sticky top-0 z-40 bg-slate-100 mb-2 pb-6">
+              <Form
+                className="relative mx-auto mb-5 w-11/12 max-w-md pt-2"
+                action={`/service/${searchValue}`}
+              >
+                <Suspense fallback={<Spinner width="w-10" height="h-10" />}>
+                  <Await
+                    resolve={allServices}
+                    errorElement={<p>Nothing was fetched from server</p>}
+                  >
+                    {(allServices) => {
+                      allServicesRef.current = allServices;
+                      return (
+                        <EditableSelect
+                          list={allServices.map((service, i) => (
+                            <Link key={i} to={`service/${service.name}`}>
+                              {service.name}
+                            </Link>
+                          ))}
+                          placeholder="What Service do you need?"
+                          textChanged={setSearchValue}
+                          value={searchValue}
+                        />
+                      );
+                    }}
+                  </Await>
+                </Suspense>
+                <button type="submit" className="absolute right-2 top-2">
+                  <span className="material-symbols-outlined">search</span>
+                </button>
+              </Form>
+              <nav className="flex flex-wrap justify-around gap-2 text-2xl sm:justify-around">
+                <Link
+                  to="offering"
+                  className="rounded bg-red-700 px-4 py-2 capitalize text-red-100"
                 >
-                  {(allServices) => {
-                    allServicesRef.current = allServices;
-                    return (
-                      <EditableSelect
-                        list={allServices.map((service, i) => (
-                          <Link key={i} to={`service/${service.name}`}>
-                            {service.name}
-                          </Link>
-                        ))}
-                        placeholder="What Service do you need?"
-                        textChanged={setSearchValue}
-                        value={searchValue}
-                      />
-                    );
-                  }}
-                </Await>
-              </Suspense>
-              <button type="submit" className="absolute right-2 top-2">
-                <span className="material-symbols-outlined">search</span>
-              </button>
-            </Form>
-            <nav className="flex flex-wrap justify-around gap-2 text-2xl sm:justify-around">
-              <Link
-                to="offering"
-                className="rounded bg-red-700 px-4 py-2 capitalize text-red-100"
-              >
-                What I Offer
-              </Link>
-              <Link
-                className="rounded bg-red-700 px-4 py-2 capitalize text-red-100"
-                to="showyourself"
-              >
-                Provide
-              </Link>
-              <Link
-                to="requested"
-                className="rounded bg-red-700 px-4 py-2 capitalize text-red-100"
-              >
-                Subscribed Providers
-              </Link>
-            </nav>
-          </header>
+                  What I Offer
+                </Link>
+                <Link
+                  className="rounded bg-red-700 px-4 py-2 capitalize text-red-100"
+                  to="showyourself"
+                >
+                  Provide
+                </Link>
+                <Link
+                  to="requested"
+                  className="rounded bg-red-700 px-4 py-2 capitalize text-red-100"
+                >
+                  Subscribed Providers
+                </Link>
+              </nav>
+            </div>
+          </>
         )}
         <div className="flex flex-col-reverse gap-4 md:flex-row">
           <main className="flex-1 flex-grow">
@@ -238,7 +242,7 @@ export default function App() {
                 <Await resolve={ad}>
                   {(advertised) =>
                     advertised && advertised.length > 0 ? (
-                      <div className="flex flex-col gap-4 md:w-11/12 w-3/4">
+                      <div className="flex w-3/4 flex-col gap-4 md:w-11/12">
                         {advertised.map((advert: BasicVendor, i: number) => (
                           <VendorComponent
                             key={i}

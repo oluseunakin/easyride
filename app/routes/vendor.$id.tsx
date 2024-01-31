@@ -80,7 +80,7 @@ export default function Vendor() {
     },
     { index: -1, children: [] }
   );
-  const [receiver, setReceiver] = useState({ name: "", id: "joker" });
+  const [receiver, setReceiver] = useState({ email: "", id: "joker" });
   const bookerFetcher = useFetcher();
 
   useEffect(() => {
@@ -144,7 +144,7 @@ export default function Vendor() {
         <button
           onClick={() => {
             if (!offerer) {
-              setReceiver({ ...receiver, name: vendorRef.current!.name });
+              setReceiver({ ...receiver, email: vendorRef.current!.name });
               fetchChats.load(`/chats/${userId}/${vendorRef.current!.id}`);
             } else {
               setModalState({
