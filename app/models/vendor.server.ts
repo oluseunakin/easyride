@@ -3,7 +3,6 @@ import { prisma } from "~/db.server";
 import { castTo32bitsInt, hashParties } from "~/helper";
 import type { Location, Media } from "~/types";
 import OpenAI from "openai";
-import { type Vendor } from "@prisma/client";
 
 export const getSynonymsFromOpenAI = async (serviceName: string) => {
   const synonyms: string[] = [];
@@ -118,7 +117,7 @@ export const getVendorsNearby = async (
         COS(RADIANS(${lat})) * COS(RADIANS(lat)) *
         POWER(SIN(RADIANS((${long} - long) / 2)), 2)
       )
-    ) >= ${radius}
+    ) <= ${radius}
     AND v."offererId" != ${userId}
     ORDER BY v."id" ASC
     OFFSET ${offset} ROWS
@@ -201,53 +200,59 @@ export const getAdvertisedNearby = async (
 ) => {
   const { lat, long } = userLocation;
   const offset = count * take;
-  return await prisma.$queryRaw<Vendor[]>`WITH VendorDistances AS (
-      SELECT
-        v."id",
-        v.name,
-        v.about,
-        v."serviceName",
-        v.lat,
-        v.long,
-        v.contact,
-        v."offererId",
-        v.cover, 
-        v.advert,
-        2 * 6371 * ASIN(
-          SQRT(
-            POWER(SIN(RADIANS((${lat} - v.lat) / 2)), 2) +
-            COS(RADIANS(${lat})) * COS(RADIANS(v.lat)) *
-            POWER(SIN(RADIANS((${long} - v.long) / 2)), 2)
-          )
-        ) AS distance
-      FROM
-        "Vendor" v
-    )
-    SELECT
-      vd.id,
-      vd.name,
-      vd.about,
-      vd."serviceName",
-      vd.lat,
-      vd.long,
-      vd.contact,
-      vd."offererId",
-      vd.cover,
-      vd.distance,
-      subscribers."id" 
-    FROM
-      VendorDistances vd
-    LEFT JOIN 
-      "_requests" sr ON sr."B" = vd.id
-    LEFT JOIN 
-      "User" subscribers ON subscribers."id" = sr."A"
-    WHERE vd.advert = true
-    /* WHERE 
-       vd.distance <= ${radius}  */
-    ORDER BY vd.id ASC
+  function toRadians(degrees: number) {
+    return degrees * (Math.PI / 180);
+  }
+  const extendedPrisma = prisma.$extends({
+    result: {
+      vendor: {
+        distance: {
+          needs: { lat: true, long: true },
+          compute(vendor) {
+            const lat1 = lat;
+            const lon1 = long;
+            const lat2 = vendor.lat;
+            const lon2 = vendor.long;
+            const dLat = toRadians(lat2 - lat1);
+            const dLon = toRadians(lon2 - lon1);
+            const a =
+              Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(toRadians(lat1)) *
+                Math.cos(toRadians(lat2)) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = 6371 * c; // Radius of the Earth in kilometers
+            return distance;
+          },
+        },
+      },
+    },
+  });
+  return await extendedPrisma.$queryRaw`
+  SELECT
+    *,
+    2 * 6371 * ASIN(
+      SQRT(
+        POWER(SIN(RADIANS((${lat} - lat) / 2)), 2) +
+        COS(RADIANS(${lat})) * COS(RADIANS(lat)) *
+        POWER(SIN(RADIANS((${long} - long) / 2)), 2)
+      )
+    ) AS distance
+  FROM
+    "Vendor" v
+  WHERE
+    2 * 6371 * ASIN(
+      SQRT(
+        POWER(SIN(RADIANS((${lat} - lat) / 2)), 2) +
+        COS(RADIANS(${lat})) * COS(RADIANS(lat)) *
+        POWER(SIN(RADIANS((${long} - long) / 2)), 2)
+      )
+    ) <= ${radius}
+    AND v.advert = true
+    ORDER BY v."id" ASC
     OFFSET ${offset} ROWS
-    FETCH NEXT ${take} ROWS ONLY
-    `;
+    FETCH NEXT ${take} ROWS ONLY`;
 };
 
 export const getAdvertised = async (count: number, take: number) => {
