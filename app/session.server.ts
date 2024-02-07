@@ -24,7 +24,7 @@ export async function getSession(request: Request) {
 export const getUserId = async (request: Request) => {
   const session = await getSession(request);
   if (session.has("userId")) {
-    return session.get("userId");
+    return session.get("userId") as string;
   }
   return null
 }

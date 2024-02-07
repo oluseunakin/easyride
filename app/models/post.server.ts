@@ -1,4 +1,5 @@
 import { prisma } from "~/db.server";
+import { castTo32bitsInt } from "~/helper";
 import type { Media } from "~/types";
 
 export const getPost = (id: number) => {
@@ -70,6 +71,7 @@ export const createPost = async (post: {
 }) => {
   return await prisma.post.create({
     data: {
+      id: castTo32bitsInt(),
       vendor: { connect: { id: post.vendorId } },
       content: post.description,
       media: post.media,

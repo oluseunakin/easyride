@@ -8,7 +8,7 @@ import { getUserId } from "~/session.server";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const userId = await getUserId(request);
-  return defer({ user: findUserWithRequests(userId) });
+  return defer({ user: findUserWithRequests(userId!) });
 };
 
 export default function Requested() {
@@ -26,7 +26,7 @@ export default function Requested() {
         {(user) =>
           user && user.myRequests.length > 0 ? (
             <div className="p-2">
-              <div className="mx-auto max-w-sm w-11/12">
+              <div className="mx-auto max-w-sm w-full">
                 <EditableSelect
                   list={user.myRequests.map((request, i) => (
                     <Link key={i} to={`/vendor/${request.id}`}>
@@ -41,7 +41,7 @@ export default function Requested() {
                   <Link
                     to={`/vendor/${provider.id}`}
                     key={i}
-                    className="mx-auto rounded-lg bg-slate-700 p-10 text-white sm:w-3/5"
+                    className="mx-auto rounded-lg bg-slate-700 py-6 px-4 text-white sm:w-3/5"
                   >
                     <h1 className="mb-2 text-center font-serif text-3xl uppercase leading-loose tracking-widest md:text-4xl">
                       {provider.name}

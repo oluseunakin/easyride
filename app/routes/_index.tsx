@@ -1,17 +1,14 @@
-import { json, redirect } from "@remix-run/node";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import { json } from "@remix-run/node";
+import type { ActionArgs } from "@remix-run/node";
+import { useFetcher, useOutletContext } from "@remix-run/react";
 import { useState, useEffect, useRef } from "react";
-import { getSession, getUserId, ss } from "~/session.server";
-import type { BasicVendor, Location } from "~/types";
+import { getSession, ss } from "~/session.server";
+import { socket } from "~/root";
 import { Spinner } from "~/components/Spinner";
+import type { BasicVendor, Context, Location } from "~/types";
+import type { Post } from "@prisma/client";
+import { PostComponent } from "~/components/Post";
 import { VendorComponent } from "~/components/Vendor";
-
-export const loader = async ({ request }: LoaderArgs) => {
-  const userId = await getUserId(request);
-  if (userId) return userId;
-  throw redirect("login");
-};
 
 export const action = async ({ request }: ActionArgs) => {
   const fd = await request.formData();
@@ -19,8 +16,7 @@ export const action = async ({ request }: ActionArgs) => {
   const long = Number(fd.get("long") as string);
   const session = await getSession(request);
   session.set("location", { lat, long });
-  await ss.commitSession(session);
-  return json("Location set", {
+  return json("location set", {
     headers: {
       "Set-Cookie": await ss.commitSession(session),
     },
@@ -28,21 +24,34 @@ export const action = async ({ request }: ActionArgs) => {
 };
 
 export default function Index() {
-  const userId = useLoaderData<typeof loader>();
-  const [location, setLocation] = useState<Location>();
+  const { userId, userName } = useOutletContext<Context>();
   const [nearbyVendors, setNearbyVendors] = useState<BasicVendor[]>([]);
-  const sendLocationFetcher = useFetcher();
+  const [subscribedPosts, setSubscribedPosts] = useState<Post[]>([]);
   const getNearbyVendorsFetcher = useFetcher();
+  const getSubscribedPostsFetcher = useFetcher();
   const [count, setCount] = useState(0);
   const nearbyVendorDivRef = useRef<HTMLDivElement>(null);
   const [fetchingMore, setFetchingMore] = useState(false);
   const preservedScrollPosition = useRef(0);
+  const [connected, setConnected] = useState(false);
+  const [done, setDone] = useState(false);
+  const [location, setLocation] = useState<Location>();
+  const sendLocationFetcher = useFetcher();
 
   useEffect(() => {
-    if (nearbyVendors.length > 0 && count > 0) {
-      window.scrollTo(0, preservedScrollPosition.current);
-    }
-  }, [nearbyVendors, count]);
+    socket.connect();
+    setConnected(true);
+    socket.on("connect", () => {
+      console.log("Socket has been connected");
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    connected && socket.emit("join", userId);
+  }, [connected, userId]);
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -74,14 +83,63 @@ export default function Index() {
 
   useEffect(() => {
     if (
+      userId &&
+      count == 0 &&
       getNearbyVendorsFetcher.state === "idle" &&
-      sendLocationFetcher.data &&
-      !getNearbyVendorsFetcher.data &&
-      location
+      !getNearbyVendorsFetcher.data
     ) {
+      getSubscribedPostsFetcher.load(`subscribedposts/${count}`);
       getNearbyVendorsFetcher.load(`localvendors/${count}`);
     }
-  }, [getNearbyVendorsFetcher, location, sendLocationFetcher.data, count]);
+  }, [count, getNearbyVendorsFetcher, userId, getSubscribedPostsFetcher]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry, i) => {
+          if (entry.isIntersecting && !done && !fetchingMore && count != 0) {
+            setFetchingMore(true);
+            preservedScrollPosition.current = window.scrollY;
+            getSubscribedPostsFetcher.load(`subscribedposts/${count}`);
+            getNearbyVendorsFetcher.load(`localvendors/${count}`);
+          }
+        });
+      },
+      { root: null, threshold: 0.95 }
+    );
+    const nearbyVendorDiv = nearbyVendorDivRef.current;
+    nearbyVendorDiv && observer.observe(nearbyVendorDiv);
+    return () => {
+      observer.disconnect();
+    };
+  }, [
+    count,
+    getNearbyVendorsFetcher,
+    done,
+    fetchingMore,
+    getSubscribedPostsFetcher,
+  ]);
+
+  useEffect(() => {
+    if (count > 0) {
+      window.scrollTo(0, preservedScrollPosition.current);
+    }
+  }, [count]);
+
+  useEffect(() => {
+    if (
+      getSubscribedPostsFetcher.state === "idle" &&
+      getSubscribedPostsFetcher.data
+    ) {
+      const posts = getSubscribedPostsFetcher.data;
+      if (posts.length < 1) setDone(true);
+      else {
+        setSubscribedPosts((prev) => [...prev, ...posts]);
+        setCount((count) => count + 1);
+      }
+      setFetchingMore(false);
+    }
+  }, [getSubscribedPostsFetcher.data, getSubscribedPostsFetcher.state]);
 
   useEffect(() => {
     if (
@@ -89,71 +147,82 @@ export default function Index() {
       getNearbyVendorsFetcher.data
     ) {
       const vendors = getNearbyVendorsFetcher.data.vendors;
-      setNearbyVendors((prev) => [...prev, ...vendors]);
-      setCount((count) => count + 1);
+      if (vendors.length < 1) setDone(true);
+      else {
+        setNearbyVendors((prev) => [...prev, ...vendors]);
+      }
       setFetchingMore(false);
     }
   }, [getNearbyVendorsFetcher.data, getNearbyVendorsFetcher.state]);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry, i) => {
-          if (entry.isIntersecting && count > 0) {
-            setFetchingMore(true);
-            preservedScrollPosition.current = window.scrollY;
-            getNearbyVendorsFetcher.load(`localvendors/${count}`);
-          }
-        });
-      },
-      { root: null, threshold: 0.7 }
+    if (getNearbyVendorsFetcher.data && getSubscribedPostsFetcher.data)
+      setCount((count) => count + 1);
+  }, [getNearbyVendorsFetcher.data, getSubscribedPostsFetcher.data]);
+
+  const toShow =
+    getNearbyVendorsFetcher.state === "loading" ? (
+      <div className="mx-auto w-max">
+        <Spinner width="w-10" height="h-10" />
+      </div>
+    ) : (
+      <div
+        className="mx-auto flex w-11/12 flex-col gap-4"
+        ref={nearbyVendorDivRef}
+      >
+        {nearbyVendors.length + subscribedPosts.length > 0 ? (
+          subscribedPosts.map((post, i) => {
+            let j = 0;
+            if (i == 5 && nearbyVendors.length > 0) {
+              const sliced = nearbyVendors.slice(j, j + 2);
+              j++;
+              return sliced.map((vendor) => (
+                <VendorComponent
+                  key={vendor?.id}
+                  userId={userId}
+                  vendor={vendor}
+                />
+              ));
+            }
+            return (
+              <PostComponent
+                key={i}
+                offerer={false}
+                post={post}
+                userId={userId}
+                username={userName}
+                vendorId={post.vendorId}
+              />
+            );
+          })
+        ) : (
+          <div className="mx-auto bg-white px-6 py-8 text-center text-3xl shadow">
+            <p>Find Vendors around you</p>
+            <p>Tell locals what you can do and offer</p>
+          </div>
+        )}
+        {fetchingMore && (
+          <div className="mx-auto w-max">
+            <Spinner width="w-10" height="h-10" />
+          </div>
+        )}
+      </div>
     );
-    const nearbyVendorDiv = nearbyVendorDivRef.current;
-    nearbyVendorDiv && observer.observe(nearbyVendorDiv);
-    return () => {
-      observer.disconnect();
-    };
-  }, [count, getNearbyVendorsFetcher]);
+
+  if (userId) return toShow;
 
   return (
-    <>
-      {getNearbyVendorsFetcher.state === "loading" ? (
-        <div className="mx-auto w-max">
-          <Spinner width="w-14" height="h-14" />
-        </div>
-      ) : (
-        <>
-          {nearbyVendors.length > 0 ? (
-            <div
-              className="mx-auto flex w-11/12 flex-col"
-              ref={nearbyVendorDivRef}
-            >
-              {fetchingMore ? (
-                <div className="mx-auto w-max">
-                  <Spinner width="w-10" height="h-10" />
-                </div>
-              ) : (
-                nearbyVendors?.map((nv, i) => (
-                  <VendorComponent key={i} vendor={nv} userId={userId} />
-                ))
-              )}
-            </div>
-          ) : (
-            <div className="mx-auto my-2 flex w-11/12 flex-col items-center justify-center gap-10 text-center">
-              <h2 className="break-words text-4xl text-red-700">
-                <p className="mb-4">Need a Service or Products delivered? </p>
-                <p>
-                  You need a platform to showcase your services or tell locals
-                  what you offer?
-                </p>
-              </h2>
-              <h3 className="text-3xl text-red-500">
-                Click on the links above or Search for a service you want
-              </h3>
-            </div>
-          )}
-        </>
-      )}
-    </>
+    <h2 className="mx-auto mt-8 flex w-11/12 flex-col gap-5 break-words text-center text-4xl text-red-700 md:w-3/5">
+      <p className="mb-4">Need Services or Products delivered? </p>
+      <p>
+        You need a platform to showcase your services or tell locals what you
+        offer?
+      </p>
+      <p>
+        Show your awesome products and excellent services to those who need them
+        around
+      </p>
+      <p>Post what you do to your subscribers</p>
+    </h2>
   );
 }

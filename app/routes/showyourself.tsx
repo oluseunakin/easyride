@@ -46,7 +46,7 @@ export const action = async ({ request }: ActionArgs) => {
     };
     const newVendorName = await createVendor(
       name,
-      userId,
+      userId!,
       about,
       serviceName,
       contact,
@@ -118,7 +118,7 @@ export default function Index() {
   ) : (
     <Form
       method="POST"
-      className="mx-auto mb-6 w-11/12 rounded-lg bg-slate-800 p-4 shadow-2xl shadow-slate-400"
+      className="mx-auto mb-6 w-11/12 rounded-lg bg-slate-700 p-4 shadow-2xl shadow-slate-400"
     >
       <h1 className="mb-8 pt-4 text-center font-sans text-5xl uppercase tracking-widest text-white">
         Show Yourself
@@ -230,7 +230,7 @@ export default function Index() {
                 const long = Number(coordsJson.lon);
                 setCoord({ lat, long });
               }}
-              className="rounded p-2 w-full"
+              className="w-full rounded p-2"
               required
             />
           </label>
@@ -240,7 +240,7 @@ export default function Index() {
             <p className="mb-2 text-white">
               Full address that will be displayed on your profile
             </p>
-            <input name="address" className="rounded p-2 w-full" />
+            <input name="address" className="w-full rounded p-2" />
           </label>
         </div>
         <div className="mb-2">
@@ -249,7 +249,7 @@ export default function Index() {
             <input
               type="number"
               name="phone"
-              className="rounded p-2 w-full"
+              className="w-full rounded p-2"
               required
             />
           </label>
@@ -257,7 +257,7 @@ export default function Index() {
         <div className="mb-2">
           <label>
             <p className="mb-2 text-white">E-mail</p>
-            <input type="email" name="email" className="rounded p-2 w-full" />
+            <input type="email" name="email" className="w-full rounded p-2" />
           </label>
         </div>
         <div className="mb-2">
@@ -266,7 +266,7 @@ export default function Index() {
             <input
               name="website"
               placeholder="Website"
-              className="rounded p-2 w-full"
+              className="w-full rounded p-2"
             />
           </label>
         </div>

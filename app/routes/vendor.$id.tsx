@@ -8,14 +8,15 @@ import {
   useFetcher,
   useLoaderData,
   useNavigation,
+  useOutletContext,
 } from "@remix-run/react";
-import { Suspense, useEffect, useReducer, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { VendorComponent } from "~/components/Vendor";
 import { storeMedia } from "~/firebase/firebase";
 import { createPost } from "~/models/post.server";
 import { getFullVendor, subscribe, unsubscribe } from "~/models/vendor.server";
 import { getUserId } from "~/session.server";
-import type { Media, ModalState } from "~/types";
+import type { Context, Media } from "~/types";
 import { Inbox } from "~/components/Inbox";
 import { Modal } from "~/components/Modal";
 import { PostComponent } from "~/components/Post";
@@ -27,9 +28,9 @@ export const loader = async ({ params, request }: LoaderArgs) => {
   const userId = await getUserId(request);
   const id = Number(params.id);
   const vendor = getFullVendor(id);
-  const user = await findUserWithOfferings(userId);
+  const user = await findUserWithOfferings(userId!);
   const offerer = Boolean(user?.offering.find((o) => o.id == id));
-  return defer({ vendor, offerer, userId, name: user?.name });
+  return defer({ vendor, offerer, userId: userId!, name: user?.name });
 };
 
 export const action = async ({ request, params }: ActionArgs) => {
@@ -48,8 +49,8 @@ export const action = async ({ request, params }: ActionArgs) => {
     await createPost({ media, description, vendorId });
     return null;
   } else if (todo === "Request") {
-    await subscribe(vendorId, userId);
-  } else await unsubscribe(vendorId, userId);
+    await subscribe(vendorId, userId!);
+  } else await unsubscribe(vendorId, userId!);
   return null;
 };
 
@@ -65,23 +66,9 @@ export default function Vendor() {
   const [hasNewMessage, setHasNewMessage] = useState(false);
   const fetchChats = useFetcher();
   const hasBookedRef = useRef<HTMLSpanElement>(null);
-  const [modalState, setModalState] = useReducer(
-    (state: ModalState, action: any): ModalState => {
-      if (action.type === "close") return { index: -1, children: [] };
-      else if (action.type === "back") {
-        const children = [...state.children];
-        children.pop();
-        return { index: state.index - 1, children };
-      } else
-        return {
-          index: state.index + 1,
-          children: [...state.children, action.data],
-        };
-    },
-    { index: -1, children: [] }
-  );
-  const [receiver, setReceiver] = useState({ email: "", id: "joker" });
+  const [receiver, setReceiver] = useState({ name: "", id: "joker" });
   const bookerFetcher = useFetcher();
+  const { modalState, setModalState } = useOutletContext<Context>();
 
   useEffect(() => {
     async function doCover() {
@@ -128,6 +115,7 @@ export default function Vendor() {
     fetchChats.data,
     fetchChats.state,
     userId,
+    setModalState,
   ]);
 
   useEffect(() => {
@@ -135,7 +123,7 @@ export default function Vendor() {
       setModalState({ type: "close" });
       hasBookedRef.current?.classList.add("booked");
     }
-  }, [bookerFetcher.data, bookerFetcher.state]);
+  }, [bookerFetcher.data, bookerFetcher.state, setModalState]);
 
   return (
     <div className="mb-2">
@@ -144,7 +132,7 @@ export default function Vendor() {
         <button
           onClick={() => {
             if (!offerer) {
-              setReceiver({ ...receiver, email: vendorRef.current!.name });
+              setReceiver({ ...receiver, name: vendorRef.current!.name });
               fetchChats.load(`/chats/${userId}/${vendorRef.current!.id}`);
             } else {
               setModalState({
@@ -274,91 +262,90 @@ export default function Vendor() {
           }}
         </Await>
       </Suspense>
-      {offerer &&
-        (createPostNavigation.state === "submitting" ? (
-          <div className="mx-auto w-max">
-            <Spinner width="w-10" height="h-10" />
-          </div>
-        ) : (
-          <Form
-            method="post"
-            className="sticky top-0 mx-auto my-4 w-11/12 rounded bg-slate-800 p-4 shadow-lg shadow-slate-300 md:w-3/4 lg:w-2/3"
-          >
-            <div className="ml-3 flex items-center gap-2">
-              <textarea
-                placeholder="Show workings..."
-                name="post"
-                value={postName}
-                onChange={(e) => {
-                  setPostName(e.target.value);
-                }}
-                className="flex-grow resize-none rounded-lg border p-4 shadow-lg"
-              ></textarea>
-              <label htmlFor="media" className="cursor-pointer">
-                <span className="material-symbols-outlined text-red-700">
-                  video_library
-                </span>
-              </label>
-              <input
-                type="file"
-                multiple
-                hidden
-                id="media"
-                onChange={async (e) => {
-                  const media = e.target.files;
-                  shareRef.current!.disabled = true;
-                  setUploading("loading");
-                  setMedia(media);
-                }}
-              />
-              <button
-                type="submit"
-                name="todo"
-                value="post"
-                ref={shareRef}
-                onClick={() => {
-                  setUploading("");
-                }}
-              >
-                <span className="material-symbols-outlined text-red-700">
-                  Share
-                </span>
-              </button>
-            </div>
-            {uploading === "loading" && (
-              <div className="mt-2 flex justify-center">
-                <div className="mr-3 h-5 w-5 animate-spin rounded-full border border-t-gray-700"></div>
-              </div>
-            )}
-            {uploading === "Upload successful" && (
-              <div className="mt-2 flex justify-center text-center text-red-500">
-                {uploading}
-              </div>
-            )}
-            <input
-              type="hidden"
-              name="media"
-              value={JSON.stringify(mediaLinks)}
-            />
-          </Form>
-        ))}
       <Suspense fallback={<div>Error fetching posts</div>}>
         <Await resolve={vendor}>
           {(vendor) =>
             vendor && vendor.posts.length > 0 ? (
-              <div className="flex flex-col gap-2 m-2">
+              <div className="m-2 flex flex-col gap-2 overflow-auto">
                 {vendor.posts.map((p, i) => (
                   <div key={i} className="md:mx-auto md:w-5/6 lg:w-4/5">
                     <PostComponent
                       post={p}
                       userId={userId}
                       username={name}
-                      setModalState={setModalState}
                       offerer={offerer}
                       vendorId={vendor.id}
                     />
                   </div>
                 ))}
+                {offerer &&
+                  (createPostNavigation.state === "submitting" ? (
+                    <div className="mx-auto w-max">
+                      <Spinner width="w-10" height="h-10" />
+                    </div>
+                  ) : (
+                    <Form
+                      method="post"
+                      className="mx-auto my-4 w-11/12 rounded bg-slate-800 p-4 md:w-3/4 lg:w-2/3"
+                    >
+                      <div className="ml-3 flex items-center gap-2">
+                        <textarea
+                          placeholder="Show workings..."
+                          name="post"
+                          value={postName}
+                          onChange={(e) => {
+                            setPostName(e.target.value);
+                          }}
+                          className="flex-grow resize-none rounded-lg border p-2 shadow-lg"
+                        ></textarea>
+                        <label htmlFor="media" className="cursor-pointer">
+                          <span className="material-symbols-outlined text-red-500">
+                            video_library
+                          </span>
+                        </label>
+                        <input
+                          type="file"
+                          multiple
+                          hidden
+                          id="media"
+                          onChange={async (e) => {
+                            const media = e.target.files;
+                            shareRef.current!.disabled = true;
+                            setUploading("loading");
+                            setMedia(media);
+                          }}
+                        />
+                        <button
+                          type="submit"
+                          name="todo"
+                          value="post"
+                          ref={shareRef}
+                          onClick={() => {
+                            setUploading("");
+                          }}
+                        >
+                          <span className="material-symbols-outlined text-red-500">
+                            Share
+                          </span>
+                        </button>
+                      </div>
+                      {uploading === "loading" && (
+                        <div className="mt-2 flex justify-center">
+                          <div className="mr-3 h-5 w-5 animate-spin rounded-full border border-t-gray-700"></div>
+                        </div>
+                      )}
+                      {uploading === "Upload successful" && (
+                        <div className="mt-2 flex justify-center text-center text-red-500">
+                          {uploading}
+                        </div>
+                      )}
+                      <input
+                        type="hidden"
+                        name="media"
+                        value={JSON.stringify(mediaLinks)}
+                      />
+                    </Form>
+                  ))}
               </div>
             ) : null
           }

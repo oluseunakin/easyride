@@ -1,5 +1,5 @@
 import type { ActionArgs } from "@remix-run/node";
-import { useSubmit } from "@remix-run/react";
+import { Link, useSubmit } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { login } from "~/firebase/firebase";
 import { findUser, createUser } from "~/models/user.server";
@@ -33,7 +33,8 @@ export default function Index() {
   });
   const [remember, setRemember] = useState(false);
   const submit = useSubmit();
-  const [signUp, setSignUp] = useState(false);
+  
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -45,26 +46,30 @@ export default function Index() {
   }, [user, remember, submit]);
 
   return (
-    <div className="mx-auto flex w-11/12 flex-col justify-center md:w-3/4 mt-2 md:mt-6">
-      <h1 className="mb-8 text-center text-4xl capitalize">
+    <div className="mx-auto mt-2 flex w-11/12 flex-col justify-center md:mt-6 md:w-3/5">
+      <h1 className="mb-4 text-center text-4xl capitalize text-emerald-800">
         Login to enjoy a personalized service
       </h1>
-      <div className=" bg-slate-800 p-6">
-        <div className="m-4 flex justify-center py-4 border-b">
+      <div className="my-4 bg-slate-800 p-6">
+        <div className="flex justify-center border-b py-4">
           <button
-            className="rounded-2xl border border-transparent bg-green-600 px-8 py-4 text-2xl text-green-50"
+            className="rounded-2xl border border-transparent bg-green-600 p-4 text-2xl text-green-50"
             onClick={async () => {
               const access = await login("google");
               if (access) setUser(access);
+              else setError("Couldn't sign in");
             }}
           >
             Login with Google
           </button>
         </div>
-        <div className="my-4">
-          <p className="my-4 text-center text-slate-100">
-            {signUp ? "Sign up" : "Sign in"} using your e-mail and password
+        <>
+          <p className="mb-8 mt-4 text-center text-2xl text-slate-400 ">
+            Sign in using your e-mail and password
           </p>
+          {error.length > 0 && (
+            <p className="mx-auto mb-2 w-max text-red-600">{error}</p>
+          )}
           <div className="flex flex-col gap-4">
             <input
               type="email"
@@ -88,54 +93,38 @@ export default function Index() {
                 });
               }}
             />
-            <div className="flex justify-around">
+            <div className="flex items-center justify-evenly">
               <button
                 className="rounded-lg bg-yellow-600 px-5 py-2 text-yellow-50"
                 onClick={async () => {
-                  const ep = signUp ? "signup" : "signin";
                   const access = await login(
-                    ep,
+                    "signin",
                     emailAndPassword.email,
                     emailAndPassword.password
                   );
                   if (access) setUser(access);
+                  else setError("Couldn't sign in");
                 }}
               >
-                {signUp ? "Sign up" : "Sign in"}
+                Sign in
               </button>
-              <button className="text-amber-400"
-                onClick={() => {
-                  setSignUp(!signUp);
-                }}
-              >
-                {signUp ? "Sign in instead" : "Sign up instead"}
-              </button>
+              <Link to="/signup" className="text-slate-100">
+                Sign up instead
+              </Link>
+            </div>
+            <div className="mb-4 flex justify-center">
+              <label className="text-white">
+                <input
+                  type="checkbox"
+                  onChange={(e) => {
+                    setRemember(e.target.checked);
+                  }}
+                />{" "}
+                Remember Me
+              </label>
             </div>
           </div>
-        </div>
-
-        {/* <div className="flex justify-center m-8">
-          <button
-            className="rounded-full border border-transparent bg-orange-600 p-8"
-            onClick={async () => {
-              const access = await login("facebook");
-              if (access) setUser(access);
-            }}
-          >
-            Login with Facebook
-          </button>
-        </div> */}
-        <div className="mb-4 flex justify-center">
-          <label>
-            <input
-              type="checkbox"
-              onChange={(e) => {
-                setRemember(e.target.checked);
-              }}
-            />{" "}
-            Remember Me
-          </label>
-        </div>
+        </>
       </div>
     </div>
   );

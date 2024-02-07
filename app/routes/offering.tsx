@@ -9,7 +9,7 @@ import { getUserId } from "~/session.server";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const userId = await getUserId(request);
-  return defer({ user: findUserWithOfferings(userId) });
+  return defer({ user: findUserWithOfferings(userId!) });
 };
 
 export default function () {
@@ -27,7 +27,7 @@ export default function () {
         {(user) =>
           user && user.offering.length > 0 ? (
             <>
-              <div className="mx-auto max-w-sm w-11/12">
+              <div className="mx-auto max-w-sm w-full">
                 <EditableSelect
                   list={user.offering.map((offer, i) => (
                     <Link key={i} to={`/vendor/${offer.id}`}>
@@ -37,12 +37,12 @@ export default function () {
                   placeholder="Find your favourite Provider"
                 />
               </div>
-              <div className="my-4 flex flex-col items-center gap-8">
+              <div className="my-4 flex flex-col gap-5 items-center">
                 {user.offering.map((provider, i) => (
                   <Link
                     to={`/vendor/${provider.id}`}
                     key={i}
-                    className="mx-auto rounded-lg bg-slate-700 py-6 text-white sm:w-3/5 w-11/12 shadow-lg shadow-slate-100"
+                    className="mx-auto rounded-lg bg-slate-700 py-6 px-4 text-white sm:w-3/5 w-11/12 shadow-lg shadow-slate-100"
                   >
                     <h1 className="mb-2 text-center font-serif text-3xl uppercase leading-loose tracking-widest md:text-4xl">
                       {provider.name}
@@ -57,7 +57,7 @@ export default function () {
           ) : (
             <div className="flex justify-center items-center h-full">
               <Link
-                className="bg-blue-800 p-8 text-5xl text-blue-200"
+                className="bg-slate-800 p-8 text-5xl text-blue-200"
                 to="/showyourself"
               >
                 Provide Service

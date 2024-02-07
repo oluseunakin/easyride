@@ -48,7 +48,7 @@ export const login = async (
           password
         );
         const user = credential.user;
-        return { name: user.displayName, id: user.uid };
+        return { name: null, id: user.uid };
       }
       return null;
     } else {
@@ -59,7 +59,7 @@ export const login = async (
           password
         );
         const user = credential.user;
-        return { name: user.displayName, id: user.uid };
+        return { id: user.uid, name: null };
       }
       return null;
     }

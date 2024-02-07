@@ -9,7 +9,10 @@ export const VendorComponent = (props: {
 }) => {
   const { vendor, userId } = props;
   const subscribed = useMemo(
-    () => vendor?.subscribers? vendor?.subscribers.find((v) => v.id === userId) : null,
+    () =>
+      vendor?.subscribers
+        ? vendor?.subscribers.find((v) => v.id === userId)
+        : null,
     [userId, vendor?.subscribers]
   );
   const offerer = useMemo(
@@ -18,27 +21,33 @@ export const VendorComponent = (props: {
   );
   const eAddress = useMemo(
     () =>
-      Object.entries(vendor!.contact!).filter(
-        (c) => c[0] === "phone" || c[0] === "email" || c[0] === "website"
-      ),
+      vendor?.contact
+        ? Object.entries(vendor!.contact!).filter(
+            (c) => c[0] === "phone" || c[0] === "email" || c[0] === "website"
+          )
+        : [],
     [vendor]
   );
   const restAddress = useMemo(
     () =>
-      Object.entries(vendor!.contact!).filter(
-        (c) =>
-          c[0] !== "phone" &&
-          c[0] !== "email" &&
-          c[0] !== "website" &&
-          c[0] !== "id"
-      ),
+      vendor?.contact
+        ? Object.entries(vendor.contact).filter(
+            (c) =>
+              c[0] !== "phone" &&
+              c[0] !== "email" &&
+              c[0] !== "website" &&
+              c[0] !== "id"
+          )
+        : [],
     [vendor]
   );
   return (
-    <div className="rounded-md bg-slate-800 shadow-lg shadow-slate-400 w-11/12 mx-auto lg:h-3/5 my-5">
-      {vendor?.cover && <div className="p-2 flex justify-center">
-        <MediaComponent sources={vendor!.cover as Media[]} />
-      </div>}
+    <div className="mx-auto my-5 w-11/12 rounded-md bg-slate-800 shadow-lg shadow-slate-400 lg:h-3/5">
+      {vendor?.cover && (
+        <div className="flex justify-center p-2">
+          <MediaComponent sources={vendor!.cover as Media[]} />
+        </div>
+      )}
       <Link to={`/vendor/${vendor!.id}`} className="mb-4 mt-5 block">
         <h1 className="text-center text-4xl capitalize text-white md:text-5xl">
           {vendor!.name}
@@ -72,7 +81,7 @@ export const VendorComponent = (props: {
         </Form>
       )}
       {eAddress && (
-        <div className="mb-1 flex flex-wrap justify-center gap-2 text-center w-10/12 mx-auto">
+        <div className="mx-auto mb-1 flex w-10/12 flex-wrap justify-center gap-2 text-center">
           {eAddress.map((c, i) => (
             <p key={i} className="font-serif tracking-widest text-red-400">
               {c[1]}
@@ -91,7 +100,7 @@ export const VendorComponent = (props: {
             ))}
         </div>
       )}
-      <p className="pb-4 pl-4 pr-2 text-center lg:mx-auto lg:w-1/2 text-slate-200">
+      <p className="pb-4 pl-4 pr-2 text-center text-slate-200 lg:mx-auto lg:w-1/2">
         {vendor!.about}
       </p>
     </div>

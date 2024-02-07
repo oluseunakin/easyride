@@ -6,18 +6,25 @@ import { Suspense } from "react";
 import EditableSelect from "~/components/EditableSelect";
 import { Spinner } from "~/components/Spinner";
 import { VendorComponent } from "~/components/Vendor";
-import { findServiceWithVendors } from "~/models/service.server";
+import {
+  getServiceVendors,
+  getServiceVendorsAround,
+} from "~/models/service.server";
 import { getLocation, getUserId } from "~/session.server";
 import type { BasicVendor } from "~/types";
 
 export const loader = async ({ params, request }: LoaderArgs) => {
   const name = params.name as string;
   const coords = await getLocation(request);
-  const count = 0
-  const take = 20
-  let vendors = findServiceWithVendors(name, count, take);
-  const radius = 20
-  if (coords) vendors = findServiceWithVendors(name, count, take, coords, radius);
+  const count = 0;
+  const take = 20;
+  let vendors = getServiceVendors(count, take, name);
+  const radius = 20;
+  if (coords)
+    return defer({
+      vendors: getServiceVendorsAround(coords, radius, count, take, name),
+      userId: await getUserId(request),
+    });
   return defer({ vendors, userid: await getUserId(request) });
 };
 
@@ -40,7 +47,7 @@ export default function Service() {
       <>
         <Suspense
           fallback={
-            <div className="w-max mx-auto">
+            <div className="mx-auto w-max">
               <Spinner width="w-14" height="h-14" />
             </div>
           }
@@ -63,7 +70,9 @@ export default function Service() {
                     <VendorComponent key={i} vendor={vendor} userId={userid} />
                   ))
                 ) : (
-                  <h1 className="text-5xl mt-8 mx-auto text-center">No Vendors </h1>
+                  <h1 className="mx-auto mt-8 text-center text-5xl">
+                    No Vendors{" "}
+                  </h1>
                 )}
               </>
             )}

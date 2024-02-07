@@ -1,11 +1,13 @@
 import type { Prisma } from "@prisma/client";
 import type { findUser } from "./models/user.server";
-import type { getFullVendor, getVendor } from "./models/vendor.server";
+import type { getFullVendor, getVendor, getVendorsNearby } from "./models/vendor.server";
 import type { getPost } from "./models/post.server";
 import type { ReactNode } from "react";
 import type { findServiceWithVendors, getAllServices } from "./models/service.server";
 
-export type BasicVendor = Prisma.PromiseReturnType<typeof getVendor>
+export type BasicVendor = Prisma.PromiseReturnType<typeof getVendor> 
+
+export type AnotherBasicVendor = Prisma.PromiseReturnType<typeof getVendorsNearby>
 
 export type UserWithServices = Prisma.PromiseReturnType<typeof findUser>;
 
@@ -37,5 +39,9 @@ export type Location = {
 };
 
 export type Context = {
-  allServices: Prisma.PromiseReturnType<typeof getAllServices>
+  allServices: Prisma.PromiseReturnType<typeof getAllServices>;
+  userId: string;
+  userName: string;
+  modalState: ModalState;
+  setModalState: React.Dispatch<any>;
 }

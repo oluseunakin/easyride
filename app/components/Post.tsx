@@ -1,20 +1,20 @@
 import { dateFormatter } from "~/helper";
 import { MediaComponent } from "./Media";
-import { useFetcher } from "@remix-run/react";
+import { useFetcher, useOutletContext } from "@remix-run/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CommentComponent } from "./Comment";
 import type { Comment, Prisma } from "@prisma/client";
 import type { comment } from "~/models/post.server";
+import type { Context } from "~/types";
 
 export function PostComponent(props: {
   post: any;
   userId: string;
   username: string;
-  setModalState: React.Dispatch<any>;
   offerer: boolean;
   vendorId: number;
 }) {
-  const { post, userId, username, setModalState, offerer, vendorId } = props;
+  const { post, userId, username, offerer, vendorId } = props;
   const commentFetcher = useFetcher<
     { post: { comments: Comment[] } } | Comment
   >();
@@ -25,10 +25,17 @@ export function PostComponent(props: {
   const [newComment, setNewComment] =
     useState<Prisma.PromiseReturnType<typeof comment>>();
   const [comments, setComments] = useState<Comment[]>([]);
+  const { setModalState } = useOutletContext<Context>();
   //const divRef = useRef<HTMLDivElement>(null);
   const hasLiked = useMemo(
     () =>
-      post.likes ? Boolean(post.likes.find((l: {name: string, id: string}) => l.id === userId)) : false,
+      post.likes
+        ? Boolean(
+            post.likes.find(
+              (l: { name: string; id: string }) => l.id === userId
+            )
+          )
+        : false,
     [post.likes, userId]
   );
   const liked = likeFetcher.formData
@@ -37,10 +44,10 @@ export function PostComponent(props: {
   const d = new Date(post.createdAt);
 
   useEffect(() => {
-    if(likeFetcher.state === "idle" && likeFetcher.data) {
-      setLike(likeFetcher.data._count.likes)
+    if (likeFetcher.state === "idle" && likeFetcher.data) {
+      setLike(likeFetcher.data._count.likes);
     }
-  }, [likeFetcher.data, likeFetcher.state])
+  }, [likeFetcher.data, likeFetcher.state]);
 
   useEffect(() => {
     if (
@@ -131,12 +138,16 @@ export function PostComponent(props: {
   ]);
 
   return (
-    <div className="rounded-md bg-slate-800 text-slate-200 px-4 p-2 shadow-xl shadow-slate-300">
-      {post.media.length > 0 && <MediaComponent sources={post.media} />}
+    <div className="rounded-md bg-slate-800 p-2 px-4 text-slate-200 shadow-xl shadow-slate-300">
+      {post.media.length > 0 && (
+        <div className="flex justify-center p-2">
+          <MediaComponent sources={post.media} />
+        </div>
+      )}
       <p className="mt-2 first-letter:capitalize">{post.content}</p>
       <div className="mt-3">
         <likeFetcher.Form
-          action={`post/${post.id}`}
+          action={`/vendor/${vendorId}/post/${post.id}`}
           method="post"
           className="float-left"
         >
@@ -152,7 +163,7 @@ export function PostComponent(props: {
             }}
           >
             {liked ? (
-              <span className="material-symbols-outlined liked align-top text-green-600">
+              <span className="material-symbols-outlined liked align-top text-green-500">
                 sentiment_satisfied
               </span>
             ) : (
@@ -163,40 +174,43 @@ export function PostComponent(props: {
           </button>
         </likeFetcher.Form>
         <div className="flex justify-end gap-4">
-            <button
-              onClick={() => {
-                setModalState({
-                  data: (
-                    <div className="bg-slate-100  h-9/10">
-                      <div className="flex flex-wrap items-center gap-2">
-                      <p className="mt-4 ml-2">liked by</p>
+          <button
+            onClick={() => {
+              setModalState({
+                data: (
+                  <div className="h-9/10 bg-slate-100">
+                    <div className="flex flex-wrap items-center pt-4">
+                      <p className="mx-2">liked by</p>
                       {post.likes.map(
                         (like: { id: string; name: string }, i: number) => (
-                          <p key={i} className="bg-slate-800 shadow-md p-4 mt-4 text-slate-100 rounded">{like.name}</p>
+                          <p key={i} className="mr-2 text-red-600">
+                            {like.name}
+                          </p>
                         )
                       )}
                     </div>
-                    </div>
-                  ),
-                });
-              }}
-            >
-              <span>{post._count.likes}</span>
-              <span className="material-symbols-outlined align-middle text-green-600">
-                sentiment_satisfied
-              </span>
-            </button>
-            <button
-              onClick={() => {
-                commentFetcher.load(`post/${post.id}/?comment=yes`);
-              }}
-            >
-              <span>{post._count.comments}</span>
-              <span className="material-symbols-outlined align-middle text-green-600">
-                comment
-              </span>
-            </button>
-          
+                  </div>
+                ),
+              });
+            }}
+          >
+            <span>{post._count.likes}</span>
+            <span className="material-symbols-outlined align-middle text-green-500">
+              sentiment_satisfied
+            </span>
+          </button>
+          <button
+            onClick={() => {
+              commentFetcher.load(
+                `/vendor/${vendorId}/post/${post.id}/?comment=yes`
+              );
+            }}
+          >
+            <span>{post._count.comments}</span>
+            <span className="material-symbols-outlined align-middle text-green-500">
+              comment
+            </span>
+          </button>
         </div>
       </div>
       <div className="text-xs">

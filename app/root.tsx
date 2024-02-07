@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { cssBundleHref } from "@remix-run/css-bundle";
 import { defer } from "@remix-run/node";
 import type {
@@ -19,27 +18,25 @@ import {
   isRouteErrorResponse,
   useFetcher,
   useLoaderData,
-  useLocation,
   useRouteError,
 } from "@remix-run/react";
 import stylesheet from "~/tailwind.css";
 import customSheet from "~/styles/custom.css";
 import { getUserId } from "./session.server";
 import { findUser } from "./models/user.server";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useReducer, useRef, useState } from "react";
 import EditableSelect from "./components/EditableSelect";
 import { getAllServices } from "./models/service.server";
 import { Spinner } from "./components/Spinner";
 import type { Prisma } from "@prisma/client";
 import { io } from "socket.io-client";
-import { getAdvertised, getAdvertisedCount } from "./models/vendor.server";
 import { VendorComponent } from "./components/Vendor";
-import type { BasicVendor } from "./types";
-import { prisma } from "./db.server";
+import type { BasicVendor, ModalState } from "./types";
 
 export const meta: V2_MetaFunction = () => [{ title: "Connecting Businesses" }];
 
 export const socket = io("https://providersconnectchatserver.onrender.com");
+//export const socket = io("ws://localhost:5000");
 
 export function ErrorBoundary() {
   const error = useRouteError();
@@ -72,70 +69,75 @@ export const links: LinksFunction = () => [
 
 export const loader = async ({ request }: LoaderArgs) => {
   const userId = await getUserId(request);
-  const advertised = getAdvertised(0);
-  const advertisedCount = await getAdvertisedCount();
   if (userId) {
     const allServices = getAllServices();
     const user = await findUser(userId);
-    return defer({ user, allServices, advertised, advertisedCount });
+    return defer({ user, allServices });
   }
-  return defer({ user: null, allServices: [], advertised, advertisedCount });
+  return defer({ user: null, allServices: [] });
 };
 
 export default function App() {
-  const { user, allServices, advertised, advertisedCount } =
-    useLoaderData<typeof loader>();
+  const { user, allServices } = useLoaderData<typeof loader>();
   const allServicesRef =
     useRef<Prisma.PromiseReturnType<typeof getAllServices>>();
   const [searchValue, setSearchValue] = useState("");
-  const path = useLocation().pathname;
   const asideRef = useRef<HTMLElement>(null);
-  const getMoreAdvertisedFetcher = useFetcher();
-  const [advertisedState, setAdvertisedState] = useState([advertised]);
-  const [count, setCount] = useState(1);
-  const [connected, setConnected] = useState(false);
-
-  useEffect(() => {
-    socket.connect();
-    setConnected(true);
-    socket.on("connect", () => {
-      console.log("Socket has been connected");
-    });
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    connected && socket.emit("join", user?.id);
-  }, [connected, user?.id]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries[0].isIntersecting &&
-          getMoreAdvertisedFetcher.load(`getadvertised/${count}`);
-      },
-      { root: null, threshold: 0.7 }
-    );
-    advertisedCount > 0 && observer.observe(asideRef.current!);
-    return () => {
-      observer.disconnect();
-    };
-  }, [count, getMoreAdvertisedFetcher, advertisedCount]);
+  const getAdvertisedFetcher = useFetcher();
+  const [advertisements, setAdvertisements] = useState<BasicVendor[]>([]);
+  const [count, setCount] = useState(0);
+  const [modalState, setModalState] = useReducer(
+    (state: ModalState, action: any): ModalState => {
+      if (action.type === "close") return { index: -1, children: [] };
+      else if (action.type === "back") {
+        const children = [...state.children];
+        children.pop();
+        return { index: state.index - 1, children };
+      } else
+        return {
+          index: state.index + 1,
+          children: [...state.children, action.data],
+        };
+    },
+    { index: -1, children: [] }
+  );
 
   useEffect(() => {
     if (
-      getMoreAdvertisedFetcher.state === "idle" &&
-      getMoreAdvertisedFetcher.data
+      count == 0 &&
+      getAdvertisedFetcher.state === "idle" &&
+      !getAdvertisedFetcher.data
     ) {
-      setCount((count) => count++);
-      setAdvertisedState((advertisedState) => [
+      getAdvertisedFetcher.load(`getadvertised/${count}`);
+    }
+  }, [count, getAdvertisedFetcher]);
+
+  /* useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && count != 0) {
+            getAdvertisedFetcher.load(`getadvertised/${count}`);
+          }
+        });
+      },
+      { root: null, threshold: 0.7 }
+    );
+    asideRef.current && observer.observe(asideRef.current);
+    return () => {
+      observer.disconnect();
+    };
+  }, [count, getAdvertisedFetcher]);  */
+
+  useEffect(() => {
+    if (getAdvertisedFetcher.state === "idle" && getAdvertisedFetcher.data) {
+      setCount((count) => count + 1);
+      setAdvertisements((advertisedState) => [
         ...advertisedState,
-        getMoreAdvertisedFetcher.data.advertised,
+        ...getAdvertisedFetcher.data.advertised,
       ]);
     }
-  }, [getMoreAdvertisedFetcher.data, getMoreAdvertisedFetcher.state]);
+  }, [getAdvertisedFetcher.data, getAdvertisedFetcher.state]);
 
   return (
     <html lang="en">
@@ -146,34 +148,37 @@ export default function App() {
         <Links />
       </head>
       <body className="bg-slate-100">
-        {path !== "/login" && (
-          <>
-            <header className="">
+        <header>
+          <div className=" flex items-center p-2 text-white bg-slate-900">
+            <Link to="/" className="flex flex-grow items-center gap-2 text-lg">
+              <span className="material-symbols-outlined">home</span>
               {user && (
-                <div className="mb-4 flex items-center bg-red-900 p-3 text-white">
-                  <Link
-                    to="/"
-                    className="flex flex-grow items-center gap-2 text-lg"
-                  >
-                    <span className="material-symbols-outlined">home</span>
-                    <b className="text-2xl uppercase tracking-wider">
-                      {user!.name}
-                    </b>
-                  </Link>
-                  <div>
-                    <Link
-                      to="/logout"
-                      className="flex justify-end text-slate-100"
-                    >
-                      <span className="material-symbols-outlined">logout</span>
-                    </Link>
-                  </div>
-                </div>
+                <b className="text-2xl uppercase tracking-wider">
+                  {user!.name}
+                </b>
               )}
-            </header>
-            <div className="sticky top-0 z-40 bg-slate-100 mb-2 pb-6">
+            </Link>
+            {user ? (
+              <div>
+                <Link to="/logout" className="flex justify-end text-slate-400">
+                  <span className="material-symbols-outlined">logout</span>
+                </Link>
+              </div>
+            ) : (
+              <div className="flex justify-end gap-4">
+                <Link to="signup" className="bg-red-500 px-4 py-2 text-white">
+                  Sign Up
+                </Link>
+                <Link to="login" className="bg-blue-500 px-4 py-2 text-white">
+                  Login
+                </Link>
+              </div>
+            )}
+          </div>
+          {user && (
+            <div className="sticky top-0 z-40 mb-2 bg-slate-100 pb-6">
               <Form
-                className="relative mx-auto mb-5 w-11/12 max-w-md pt-2"
+                className="mb-5 flex max-w-md pt-2 justify-center mx-auto"
                 action={`/service/${searchValue}`}
               >
                 <Suspense fallback={<Spinner width="w-10" height="h-10" />}>
@@ -198,7 +203,7 @@ export default function App() {
                     }}
                   </Await>
                 </Suspense>
-                <button type="submit" className="absolute right-2 top-2">
+                <button type="submit" className="-ml-8">
                   <span className="material-symbols-outlined">search</span>
                 </button>
               </Form>
@@ -223,39 +228,41 @@ export default function App() {
                 </Link>
               </nav>
             </div>
-          </>
-        )}
+          )}
+        </header>
         <div className="flex flex-col-reverse gap-4 md:flex-row">
-          <main className="flex-1 flex-grow">
-            <Outlet context={{ allServices: allServicesRef.current }} />
+          <main className="flex-1 flex-grow mt-3">
+            <Outlet
+              context={{
+                allServices: allServicesRef.current,
+                userId: user?.id,
+                userName: user?.name,
+                modalState,
+                setModalState,
+              }}
+            />
           </main>
-          <aside ref={asideRef} className="m-4">
-            {advertisedState.map((ad, i) => (
-              <Suspense
-                key={i}
-                fallback={
+          <aside ref={asideRef} className="md:w-1/4 w-11/12 mx-auto">
+            {advertisements.length > 0 ? (
+              <div className="flex flex-col gap-4">
+                {advertisements.map((vendor, i) => (
+                  <VendorComponent
+                    vendor={vendor}
+                    userId={user!.id}
+                    key={vendor!.id}
+                  />
+                ))}
+                {getAdvertisedFetcher.state === "loading" && (
                   <div className="mx-auto w-max">
                     <Spinner width="w-10" height="h-10" />
                   </div>
-                }
-              >
-                <Await resolve={ad}>
-                  {(advertised) =>
-                    advertised && advertised.length > 0 ? (
-                      <div className="flex w-3/4 flex-col gap-4 md:w-11/12">
-                        {advertised.map((advert: BasicVendor, i: number) => (
-                          <VendorComponent
-                            key={i}
-                            vendor={advert}
-                            userId={user!.id}
-                          />
-                        ))}
-                      </div>
-                    ) : null
-                  }
-                </Await>
-              </Suspense>
-            ))}
+                )}
+              </div>
+            ) : (
+              <p className="flex justify-center bg-white py-8 px-6 shadow mx-auto text-3xl">
+                Ads here
+              </p>
+            )}
           </aside>
         </div>
         <ScrollRestoration />

@@ -33,7 +33,7 @@ model Synonym {
 }
 
 model Vendor {
-  id             Int      @id @default(autoincrement())
+  id             Int      @id
   name           String
   about          String   @default("")
   service        Service  @relation(fields: [serviceName], references: [name], onDelete: Cascade)
@@ -44,6 +44,7 @@ model Vendor {
   subscribers    User[]   @relation("requests")
   advert         Boolean  @default(false)
   lat            Float  
+  long           Float
   cover          Json[]
   contact        Json
   bookings       Booking[]
@@ -66,7 +67,7 @@ model Booking {
 }
 
 model Post {
-  id          Int @id @default(autoincrement())
+  id          Int @id
   vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   vendorId    Int 
   createdAt   DateTime @default(now())
