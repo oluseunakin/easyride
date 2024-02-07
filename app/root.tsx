@@ -148,90 +148,87 @@ export default function App() {
         <Links />
       </head>
       <body className="bg-slate-100">
-        <header>
-          <div className=" flex items-center p-2 text-white bg-slate-900">
-            <Link to="/" className="flex flex-grow items-center gap-2 text-lg">
-              <span className="material-symbols-outlined">home</span>
-              {user && (
-                <b className="text-2xl uppercase tracking-wider">
-                  {user!.name}
-                </b>
-              )}
-            </Link>
-            {user ? (
-              <div>
-                <Link to="/logout" className="flex justify-end text-slate-400">
-                  <span className="material-symbols-outlined">logout</span>
-                </Link>
-              </div>
-            ) : (
-              <div className="flex justify-end gap-4">
-                <Link to="signup" className="bg-red-500 px-4 py-2 text-white">
-                  Sign Up
-                </Link>
-                <Link to="login" className="bg-blue-500 px-4 py-2 text-white">
-                  Login
-                </Link>
-              </div>
+        <header className=" flex items-center bg-slate-900 p-2 text-white">
+          <Link to="/" className="flex flex-grow items-center gap-2 text-lg">
+            <span className="material-symbols-outlined">home</span>
+            {user && (
+              <b className="text-2xl uppercase tracking-wider">{user!.name}</b>
             )}
-          </div>
-          {user && (
-            <div className="sticky top-0 z-40 mb-2 bg-slate-100 pb-6">
-              <Form
-                className="mb-5 flex max-w-md pt-2 justify-center mx-auto"
-                action={`/service/${searchValue}`}
-              >
-                <Suspense fallback={<Spinner width="w-10" height="h-10" />}>
-                  <Await
-                    resolve={allServices}
-                    errorElement={<p>Nothing was fetched from server</p>}
-                  >
-                    {(allServices) => {
-                      allServicesRef.current = allServices;
-                      return (
-                        <EditableSelect
-                          list={allServices.map((service, i) => (
-                            <Link key={i} to={`service/${service.name}`}>
-                              {service.name}
-                            </Link>
-                          ))}
-                          placeholder="What Service do you need?"
-                          textChanged={setSearchValue}
-                          value={searchValue}
-                        />
-                      );
-                    }}
-                  </Await>
-                </Suspense>
-                <button type="submit" className="-ml-8">
-                  <span className="material-symbols-outlined">search</span>
-                </button>
-              </Form>
-              <nav className="flex flex-wrap justify-around gap-2 text-2xl sm:justify-around">
-                <Link
-                  to="offering"
-                  className="rounded bg-red-700 px-4 py-2 capitalize text-red-100"
-                >
-                  What I Offer
-                </Link>
-                <Link
-                  className="rounded bg-red-700 px-4 py-2 capitalize text-red-100"
-                  to="showyourself"
-                >
-                  Provide
-                </Link>
-                <Link
-                  to="requested"
-                  className="rounded bg-red-700 px-4 py-2 capitalize text-red-100"
-                >
-                  Subscribed Providers
-                </Link>
-              </nav>
+          </Link>
+          {user ? (
+            <div>
+              <Link to="/logout" className="flex justify-end text-slate-400">
+                <span className="material-symbols-outlined">logout</span>
+              </Link>
+            </div>
+          ) : (
+            <div className="flex justify-end gap-4">
+              <Link to="signup" className="bg-red-500 px-4 py-2 text-white">
+                Sign Up
+              </Link>
+              <Link to="login" className="bg-blue-500 px-4 py-2 text-white">
+                Login
+              </Link>
             </div>
           )}
         </header>
-        <div className="flex flex-col-reverse gap-4 md:flex-row">
-          <main className="flex-1 flex-grow mt-3">
+        {user && (
+          <header className="sticky top-0 z-40 mb-2 bg-slate-100 pb-6">
+            <Form
+              className="mx-auto mb-5 flex max-w-md pt-2 w-11/12"
+              action={`/service/${searchValue}`}
+            >
+              <Suspense fallback={<Spinner width="w-10" height="h-10" />}>
+                <Await
+                  resolve={allServices}
+                  errorElement={<p>Nothing was fetched from server</p>}
+                >
+                  {(allServices) => {
+                    allServicesRef.current = allServices;
+                    return (
+                      <EditableSelect
+                        list={allServices.map((service, i) => (
+                          <Link key={i} to={`service/${service.name}`}>
+                            {service.name}
+                          </Link>
+                        ))}
+                        placeholder="What Service do you need?"
+                        textChanged={setSearchValue}
+                        value={searchValue}
+                      />
+                    );
+                  }}
+                </Await>
+              </Suspense>
+              <button type="submit" className="-ml-8">
+                <span className="material-symbols-outlined">search</span>
+              </button>
+            </Form>
+            <nav className="flex flex-wrap justify-around gap-2 text-2xl sm:justify-around">
+              <Link
+                to="offering"
+                className="rounded bg-red-700 px-4 py-2 capitalize text-red-100"
+              >
+                What I Offer
+              </Link>
+              <Link
+                className="rounded bg-red-700 px-4 py-2 capitalize text-red-100"
+                to="showyourself"
+              >
+                Provide
+              </Link>
+              <Link
+                to="requested"
+                className="rounded bg-red-700 px-4 py-2 capitalize text-red-100"
+              >
+                Subscribed Providers
+              </Link>
+            </nav>
+          </header>
+        )}
+
+        <div className="m-2 mt-4 flex flex-col-reverse gap-4 md:flex-row">
+          <main className="flex-1 flex-grow">
             <Outlet
               context={{
                 allServices: allServicesRef.current,
@@ -242,7 +239,7 @@ export default function App() {
               }}
             />
           </main>
-          <aside ref={asideRef} className="md:w-1/4 w-11/12 mx-auto">
+          <aside ref={asideRef} className="mx-auto w-11/12 md:w-1/4">
             {advertisements.length > 0 ? (
               <div className="flex flex-col gap-4">
                 {advertisements.map((vendor, i) => (
@@ -259,7 +256,7 @@ export default function App() {
                 )}
               </div>
             ) : (
-              <p className="flex justify-center bg-white py-8 px-6 shadow mx-auto text-3xl">
+              <p className="mx-auto flex justify-center bg-white px-6 py-8 text-3xl shadow">
                 Ads here
               </p>
             )}

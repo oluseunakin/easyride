@@ -55,7 +55,7 @@ export default function () {
               </div>
             </>
           ) : (
-            <div className="flex justify-center items-center h-full">
+            <div className="flex justify-center items-center">
               <Link
                 className="bg-slate-800 p-8 text-5xl text-blue-200"
                 to="/showyourself"
